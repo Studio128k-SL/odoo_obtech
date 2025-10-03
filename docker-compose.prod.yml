@@ -30,6 +30,7 @@ services:
       - PASSWORD=${POSTGRES_DB_PASSWORD}
     networks:
       - obtech-odoo-internal-network
+      - obtech-odoo-proxymanager-network
   db:
     image: postgres:15
     container_name: obtech_odoo_db
@@ -66,5 +67,7 @@ volumes:
 
 networks:
   obtech-odoo-internal-network:
+    driver: bridge
+  obtech-odoo-proxymanager-network:
     driver: bridge
   
