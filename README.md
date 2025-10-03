@@ -1,0 +1,4 @@
+- ODOO_MASTER_PASSWORD: y9qj-2qms-vdng
+- ODOO_USER: info@studio128k.com
+- ODOO_DATABASE_NAME: odoo
+- ODOO_USER_PASSWORD: odoo

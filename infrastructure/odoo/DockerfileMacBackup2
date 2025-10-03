@@ -1,0 +1,117 @@
+FROM ubuntu:22.04 AS odoo_builder
+
+# Install dependencies
+
+RUN apt update && DEBIAN_FRONTEND=noninteractive TZ=Europe/Madrid apt install -y tzdata
+
+RUN apt install -y build-essential wget libfreetype6-dev libxml2-dev libzip-dev libldap2-dev libsasl2-dev node-less libjpeg-dev zlib1g-dev libpq-dev libxslt1-dev libldap2-dev libtiff5-dev libjpeg8-dev libopenjp2-7-dev liblcms2-dev libwebp-dev libharfbuzz-dev libfribidi-dev libxcb1-dev
+
+# Install python 3.8.128 from repository
+RUN wget https://www.python.org/ftp/python/3.8.18/Python-3.8.18.tgz
+RUN tar -xvf Python-3.8.18.tgz
+RUN ls -la
+RUN cd Python-3.8.18 && ./configure --enable-optimizations && make -j 8 && make install
+
+# Create user odoo
+#RUN useradd -m -d /opt/odoo -U -r -s /bin/bash odoo
+
+
+# Install WKhtmltopdf
+RUN apt install -y xfonts-75dpi xfonts-base wget
+
+# Install Libssl1.1
+RUN echo "deb http://security.ubuntu.com/ubuntu focal-security main" | tee /etc/apt/sources.list.d/focal-security.list && apt update
+RUN apt install libssl1.1
+
+# Download and install wkhtmltopdf
+RUN wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.bionic_amd64.deb
+RUN apt install -y ./wkhtmltox_0.12.5-1.bionic_amd64.deb
+
+
+# Install Odoo
+RUN apt install -y git pip
+
+RUN mkdir /opt/odoo
+RUN mkdir /opt/odoo/odoo
+RUN mkdir /opt/odoo/odoo-repo
+
+RUN git clone https://www.github.com/odoo/odoo --depth 1 --branch 14.0 /opt/odoo/odoo-repo
+WORKDIR /opt/odoo/odoo-repo
+
+RUN python3 --version
+RUN pip3 install wheel
+RUN pip3 install -r requirements.txt
+
+RUN apt update && apt install -y postgresql-client
+RUN pip3 install pyOpenSSL==20.0.1
+RUN pip3 install cryptography==3.3.1
+RUN pip3 install unidecode
+
+RUN mkdir /opt/odoo/odoo-custom-addons
+
+# Create default odoo.conf
+RUN mkdir /opt/odoo/odoo-conf-data
+RUN mkdir /opt/odoo/odoo-conf
+RUN chmod 777 -R /opt/odoo/odoo-conf
+
+ARG ODOO_MASTER_PASSWORD
+ARG ODOO_DB_HOST
+ARG ODOO_DB_PORT
+ARG ODOO_DB_USER
+ARG ODOO_DB_PASSWORD
+ARG ODOO_DB_NAME
+
+# Create a default odoo.conf file with the provided environment variables
+RUN echo "[options]" > /opt/odoo/odoo-conf-data/odoo.conf
+RUN echo "addons_path = /opt/odoo/odoo/addons,/opt/odoo/odoo-custom-addons,/opt/odoo/mlopez_addons_v12" >> /opt/odoo/odoo-conf-data/odoo.conf
+RUN echo "admin_passwd = ${ODOO_MASTER_PASSWORD}" >> /opt/odoo/odoo-conf-data/odoo.conf
+RUN echo "db_host = ${ODOO_DB_HOST}" >> /opt/odoo/odoo-conf-data/odoo.conf
+RUN echo "db_port = ${ODOO_DB_PORT}" >> /opt/odoo/odoo-conf-data/odoo.conf
+RUN echo "db_user = ${ODOO_DB_USER}" >> /opt/odoo/odoo-conf-data/odoo.conf
+RUN echo "db_password = ${ODOO_DB_PASSWORD}" >> /opt/odoo/odoo-conf-data/odoo.conf
+RUN echo "db_name = ${ODOO_DB_NAME}" >> /opt/odoo/odoo-conf-data/odoo.conf
+RUN echo "unaccent = True" >> /opt/odoo/odoo-conf-data/odoo.conf
+RUN echo "session_timeout = 36000" >> /opt/odoo/odoo-conf-data/odoo.conf
+
+
+# Create entrypoint file
+RUN echo '#!/bin/bash' > /opt/odoo/entrypoint.sh \
+    && echo 'if [ ! -d "/opt/odoo/odoo/addons" ]; then' >> /opt/odoo/entrypoint.sh \
+    && echo '  cp -r /opt/odoo/odoo-repo/* /opt/odoo/odoo' >> /opt/odoo/entrypoint.sh \
+    && echo 'fi' >> /opt/odoo/entrypoint.sh \
+    && echo 'if [ -z "$(ls -A /opt/odoo/odoo-conf)" ]; then' >> /opt/odoo/entrypoint.sh \
+    && echo '  cp -r /opt/odoo/odoo-conf-data/* /opt/odoo/odoo-conf' >> /opt/odoo/entrypoint.sh \
+    && echo 'fi' >> /opt/odoo/entrypoint.sh \
+    && echo 'chmod 777 -R /opt/odoo/odoo' >> /opt/odoo/entrypoint.sh \
+    && echo 'ls -la /opt/odoo/odoo' >> /opt/odoo/entrypoint.sh \
+    && echo 'chmod 777 -R /opt/odoo/odoo-conf' >> /opt/odoo/entrypoint.sh \
+    && echo 'ls -la /opt/odoo/odoo-conf' >> /opt/odoo/entrypoint.sh \
+    && echo '/usr/local/bin/python3 /opt/odoo/odoo/odoo-bin -c /opt/odoo/odoo-conf/odoo.conf "$@"' >> /opt/odoo/entrypoint.sh
+
+# Add bash for not closing the container
+#RUN echo "bash" >> /opt/odoo/entrypoint.sh
+RUN chmod +x /opt/odoo/entrypoint.sh
+
+
+RUN chmod 777 -R /opt/odoo/odoo
+RUN chmod 777 -R /opt/odoo/odoo-repo
+RUN chmod 777 -R /opt/odoo/odoo-custom-addons
+RUN chmod 777 -R /opt/odoo/odoo-conf
+
+VOLUME "/opt/odoo/odoo" 
+VOLUME "/opt/odoo/odoo-custom-addons"
+VOLUME "/opt/odoo/odoo-conf"
+
+RUN pip3 install xmlsig phonenumbers zeep
+RUN pip3 install lxml==4.8.0
+RUN pip3 install lxml_html_clean
+RUN apt-get install -y libxml2-dev libxmlsec1-dev libxmlsec1-openssl
+RUN pip3 install xmlsec==1.3.10
+
+RUN pip3 install watchdog==0.9.0
+
+WORKDIR /opt/odoo
+
+#RUN tail -f -n 100 /opt/odoo/entrypoint.sh
+
+CMD [ "/opt/odoo/entrypoint.sh" ]

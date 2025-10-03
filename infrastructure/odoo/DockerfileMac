@@ -1,0 +1,83 @@
+FROM python:3.8-slim
+
+# Evita prompts de configuración
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Instala dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3-dev \
+    libffi-dev \
+    libssl-dev \
+    libpq-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    libldap2-dev \
+    libsasl2-dev \
+    libcups2-dev \
+    libjpeg-dev \
+    libjpeg62-turbo-dev \
+    zlib1g-dev \
+    git \
+    wget \
+    node-less \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip y setuptools para evitar errores con versiones antiguas
+RUN pip install --upgrade pip setuptools wheel tomli
+
+# Clona el código fuente de Odoo 14
+RUN git clone --branch 14.0 --depth 1 https://www.github.com/odoo/odoo /odoo
+WORKDIR /odoo
+
+# Instala dependencias estándar de Odoo
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copia tu propio requirements (proyecto específico)
+COPY ./requirements.txt /tmp/requirements.txt
+
+# Instala dependencias Python (Odoo)
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
+
+
+# Creamos los directorios de addons personalizados y extra
+RUN mkdir -p /mnt/extra-addons \
+    && mkdir -p /mnt/custom-addons
+
+# Creamos el directorio de configuración de odoo por defecto para poder copiar el archivo a la unidad montada
+RUN mkdir -p /etc/odoo-default/conf
+
+# Generarmos el archivo de configuración de odoo por defecto
+# Create a default odoo.conf file with the provided environment variables
+RUN echo "[options]" > /etc/odoo-default/conf/odoo.conf
+RUN echo "addons_path = /opt/odoo/odoo/addons,/mnt/extra-addons,/mnt/custom-addons" >> /etc/odoo-default/conf/odoo.conf
+RUN echo "admin_passwd = ${ODOO_MASTER_PASSWORD}" >> /etc/odoo-default/conf/odoo.conf
+RUN echo "db_host = ${ODOO_DB_HOST}" >> /etc/odoo-default/conf/odoo.conf
+RUN echo "db_port = ${ODOO_DB_PORT}" >> /etc/odoo-default/conf/odoo.conf
+RUN echo "db_user = ${ODOO_DB_USER}" >> /etc/odoo-default/conf/odoo.conf
+RUN echo "db_password = ${ODOO_DB_PASSWORD}" >> /etc/odoo-default/conf/odoo.conf
+RUN echo "db_name = ${ODOO_DB_NAME}" >> /etc/odoo-default/conf/odoo.conf
+RUN echo "unaccent = True" >> /etc/odoo-default/conf/odoo.conf
+RUN echo "session_timeout = 36000" >> /etc/odoo-default/conf/odoo.conf
+RUN echo "data_dir = /var/lib/odoo" >> /etc/odoo-default/conf/odoo.conf
+
+# Creamos el directorio de datos y configuración de odoo para que esté disponible en el contenedor una vez se monte el volumen
+RUN mkdir -p /var/lib/odoo \
+    && mkdir -p /etc/odoo \
+    && mkdir -p /opt/odoo
+
+
+# Generamos el archivo de entrypoint.sh
+RUN echo '#!/bin/bash' > /opt/odoo/entrypoint.sh \
+    && echo 'if [ -z "$(ls -A /etc/odoo)" ]; then' >> /opt/odoo/entrypoint.sh \
+    && echo '  cp -r /etc/odoo-default/conf/* /etc/odoo' >> /opt/odoo/entrypoint.sh \
+    && echo 'fi' >> /opt/odoo/entrypoint.sh \
+    && echo 'chmod 777 -R /odoo' >> /opt/odoo/entrypoint.sh \
+    && echo 'chmod 777 -R /etc/odoo' >> /opt/odoo/entrypoint.sh \
+    && echo '/usr/local/bin/python3 /odoo/odoo-bin -c /etc/odoo/odoo.conf "$@"' >> /opt/odoo/entrypoint.sh
+
+# Hacemos el archivo de entrypoint.sh ejecutable
+RUN chmod +x /opt/odoo/entrypoint.sh
+
+# Comando de ejecución por defecto
+ENTRYPOINT ["/bin/bash", "-c","/opt/odoo/entrypoint.sh"]
