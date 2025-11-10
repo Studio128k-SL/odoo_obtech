@@ -52,6 +52,8 @@ services:
       - db
     volumes:
       - obtech-odoo-pgadmin-data:/var/lib/pgadmin
+    ports:
+      - 8080:${PGADMIN_LISTEN_PORT}
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
