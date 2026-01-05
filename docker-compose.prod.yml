@@ -15,6 +15,7 @@ services:
     build:
       context: ./infrastructure/odoo
       dockerfile: Dockerfile
+    restart: always
     container_name: obtech_odoo
     #command: --dev all --log-level debug
     depends_on:
@@ -48,6 +49,7 @@ services:
   pgadmin:
     image: elestio/pgadmin:REL-9_8
     container_name: obtech_odoo_db_admin
+    restart: always
     depends_on:
       - db
     volumes:
