@@ -1,0 +1,986 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data noupdate="1">
+    <record id="action_remove_sales" model="ir.actions.server">
+      <field name="name">Remove Sales Data</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+def _remove_data(env, models_list, seqs_list):
+    for line in models_list:
+        try:
+            if not env['ir.model']._get(line):
+                continue
+        except Exception as e:
+            _logger.warning('remove data error get ir.model: %s,%s', line, e)
+            continue
+        obj_name = line
+        try:
+            obj = env.registry.models.get(obj_name)
+        except Exception:
+            obj = None
+        if not obj:
+            t_name = obj_name.replace('.', '_')
+        else:
+            # try to get table name via ir.model._get
+            try:
+                t = env['ir.model']._get(obj_name)
+                t_name = t.model.replace('.', '_')
+            except Exception:
+                t_name = obj_name.replace('.', '_')
+        sql = "delete from %s" % t_name
+        try:
+            env.cr.execute(sql)
+            try:
+                env.cr.commit()
+            except Exception:
+                # commit might be restricted on SaaS, ignore if fails
+                pass
+        except Exception as e:
+            _logger.warning('remove data error: %s,%s', line, e)
+    for line in seqs_list:
+        domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+        try:
+            seqs = env['ir.sequence'].sudo().search(domain)
+            if seqs.exists():
+                seqs.write({'number_next': 1})
+        except Exception as e:
+            _logger.warning('reset sequence data error: %s,%s', line, e)
+    return True
+
+# execute
+_remove_data(env, ['sale.order.line','sale.order'], ['sale'])
+      ]]></field>
+    </record>
+
+    <record id="action_remove_product" model="ir.actions.server">
+      <field name="name">Remove Product Data</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+def _remove_data(env, models_list, seqs_list):
+    for line in models_list:
+        try:
+            if not env['ir.model']._get(line):
+                continue
+        except Exception as e:
+            _logger.warning('remove data error get ir.model: %s,%s', line, e)
+            continue
+        obj_name = line
+        try:
+            obj = env.registry.models.get(obj_name)
+        except Exception:
+            obj = None
+        if not obj:
+            t_name = obj_name.replace('.', '_')
+        else:
+            # try to get table name via ir.model._get
+            try:
+                t = env['ir.model']._get(obj_name)
+                t_name = t.model.replace('.', '_')
+            except Exception:
+                t_name = obj_name.replace('.', '_')
+        sql = "delete from %s" % t_name
+        try:
+            env.cr.execute(sql)
+            try:
+                env.cr.commit()
+            except Exception:
+                # commit might be restricted on SaaS, ignore if fails
+                pass
+        except Exception as e:
+            _logger.warning('remove data error: %s,%s', line, e)
+    for line in seqs_list:
+        domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+        try:
+            seqs = env['ir.sequence'].sudo().search(domain)
+            if seqs.exists():
+                seqs.write({'number_next': 1})
+        except Exception as e:
+            _logger.warning('reset sequence data error: %s,%s', line, e)
+    return True
+
+_remove_data(env, ['product.product','product.template'], ['product.product'])
+      ]]></field>
+    </record>
+
+    <record id="action_remove_product_attribute" model="ir.actions.server">
+      <field name="name">Remove Product Attributes</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+def _remove_data(env, models_list, seqs_list):
+    for line in models_list:
+        try:
+            if not env['ir.model']._get(line):
+                continue
+        except Exception as e:
+            _logger.warning('remove data error get ir.model: %s,%s', line, e)
+            continue
+        obj_name = line
+        try:
+            obj = env.registry.models.get(obj_name)
+        except Exception:
+            obj = None
+        if not obj:
+            t_name = obj_name.replace('.', '_')
+        else:
+            # try to get table name via ir.model._get
+            try:
+                t = env['ir.model']._get(obj_name)
+                t_name = t.model.replace('.', '_')
+            except Exception:
+                t_name = obj_name.replace('.', '_')
+        sql = "delete from %s" % t_name
+        try:
+            env.cr.execute(sql)
+            try:
+                env.cr.commit()
+            except Exception:
+                # commit might be restricted on SaaS, ignore if fails
+                pass
+        except Exception as e:
+            _logger.warning('remove data error: %s,%s', line, e)
+    for line in seqs_list:
+        domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+        try:
+            seqs = env['ir.sequence'].sudo().search(domain)
+            if seqs.exists():
+                seqs.write({'number_next': 1})
+        except Exception as e:
+            _logger.warning('reset sequence data error: %s,%s', line, e)
+    return True
+
+_remove_data(env, ['product.attribute.value','product.attribute'], [])
+      ]]></field>
+    </record>
+
+    <record id="action_remove_pos" model="ir.actions.server">
+      <field name="name">Remove POS Data</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+def _remove_data(env, models_list, seqs_list):
+    for line in models_list:
+        try:
+            if not env['ir.model']._get(line):
+                continue
+        except Exception as e:
+            _logger.warning('remove data error get ir.model: %s,%s', line, e)
+            continue
+        obj_name = line
+        try:
+            obj = env.registry.models.get(obj_name)
+        except Exception:
+            obj = None
+        if not obj:
+            t_name = obj_name.replace('.', '_')
+        else:
+            # try to get table name via ir.model._get
+            try:
+                t = env['ir.model']._get(obj_name)
+                t_name = t.model.replace('.', '_')
+            except Exception:
+                t_name = obj_name.replace('.', '_')
+        sql = "delete from %s" % t_name
+        try:
+            env.cr.execute(sql)
+            try:
+                env.cr.commit()
+            except Exception:
+                # commit might be restricted on SaaS, ignore if fails
+                pass
+        except Exception as e:
+            _logger.warning('remove data error: %s,%s', line, e)
+    for line in seqs_list:
+        domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+        try:
+            seqs = env['ir.sequence'].sudo().search(domain)
+            if seqs.exists():
+                seqs.write({'number_next': 1})
+        except Exception as e:
+            _logger.warning('reset sequence data error: %s,%s', line, e)
+    return True
+
+res = _remove_data(env, ['pos.payment','pos.order.line','pos.order','pos.session', 'pos.payment.method', 'pos.config'], ['pos.'])
+try:
+    statement = env['account.bank.statement'].sudo().search([])
+    for s in statement:
+        try:
+            s._end_balance()
+        except Exception:
+            pass
+except Exception as e:
+    _logger.error('reset sequence data error: %s', e)
+
+res
+      ]]></field>
+    </record>
+
+    <record id="action_remove_purchase" model="ir.actions.server">
+      <field name="name">Remove Purchase Data</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+def _remove_data(env, models_list, seqs_list):
+    for line in models_list:
+        try:
+            if not env['ir.model']._get(line):
+                continue
+        except Exception as e:
+            _logger.warning('remove data error get ir.model: %s,%s', line, e)
+            continue
+        obj_name = line
+        try:
+            obj = env.registry.models.get(obj_name)
+        except Exception:
+            obj = None
+        if not obj:
+            t_name = obj_name.replace('.', '_')
+        else:
+            # try to get table name via ir.model._get
+            try:
+                t = env['ir.model']._get(obj_name)
+                t_name = t.model.replace('.', '_')
+            except Exception:
+                t_name = obj_name.replace('.', '_')
+        sql = "delete from %s" % t_name
+        try:
+            env.cr.execute(sql)
+            try:
+                env.cr.commit()
+            except Exception:
+                # commit might be restricted on SaaS, ignore if fails
+                pass
+        except Exception as e:
+            _logger.warning('remove data error: %s,%s', line, e)
+    for line in seqs_list:
+        domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+        try:
+            seqs = env['ir.sequence'].sudo().search(domain)
+            if seqs.exists():
+                seqs.write({'number_next': 1})
+        except Exception as e:
+            _logger.warning('reset sequence data error: %s,%s', line, e)
+    return True
+
+_remove_data(env, ['purchase.order.line','purchase.order','purchase.requisition.line','purchase.requisition'], ['purchase.'])
+      ]]></field>
+    </record>
+
+    <record id="action_remove_expense" model="ir.actions.server">
+      <field name="name">Remove Expense &amp; Payroll Data</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+def _remove_data(env, models_list, seqs_list):
+    for line in models_list:
+        try:
+            if not env['ir.model']._get(line):
+                continue
+        except Exception as e:
+            _logger.warning('remove data error get ir.model: %s,%s', line, e)
+            continue
+        obj_name = line
+        try:
+            obj = env.registry.models.get(obj_name)
+        except Exception:
+            obj = None
+        if not obj:
+            t_name = obj_name.replace('.', '_')
+        else:
+            # try to get table name via ir.model._get
+            try:
+                t = env['ir.model']._get(obj_name)
+                t_name = t.model.replace('.', '_')
+            except Exception:
+                t_name = obj_name.replace('.', '_')
+        sql = "delete from %s" % t_name
+        try:
+            env.cr.execute(sql)
+            try:
+                env.cr.commit()
+            except Exception:
+                # commit might be restricted on SaaS, ignore if fails
+                pass
+        except Exception as e:
+            _logger.warning('remove data error: %s,%s', line, e)
+    for line in seqs_list:
+        domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+        try:
+            seqs = env['ir.sequence'].sudo().search(domain)
+            if seqs.exists():
+                seqs.write({'number_next': 1})
+        except Exception as e:
+            _logger.warning('reset sequence data error: %s,%s', line, e)
+    return True
+
+_remove_data(env, ['hr.expense.sheet','hr.expense','hr.payslip','hr.payslip.run'], ['hr.expense.'])
+      ]]></field>
+    </record>
+
+    <record id="action_remove_mrp" model="ir.actions.server">
+      <field name="name">Remove MRP Data</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+def _remove_data(env, models_list, seqs_list):
+    for line in models_list:
+        try:
+            if not env['ir.model']._get(line):
+                continue
+        except Exception as e:
+            _logger.warning('remove data error get ir.model: %s,%s', line, e)
+            continue
+        obj_name = line
+        try:
+            obj = env.registry.models.get(obj_name)
+        except Exception:
+            obj = None
+        if not obj:
+            t_name = obj_name.replace('.', '_')
+        else:
+            # try to get table name via ir.model._get
+            try:
+                t = env['ir.model']._get(obj_name)
+                t_name = t.model.replace('.', '_')
+            except Exception:
+                t_name = obj_name.replace('.', '_')
+        sql = "delete from %s" % t_name
+        try:
+            env.cr.execute(sql)
+            try:
+                env.cr.commit()
+            except Exception:
+                # commit might be restricted on SaaS, ignore if fails
+                pass
+        except Exception as e:
+            _logger.warning('remove data error: %s,%s', line, e)
+    for line in seqs_list:
+        domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+        try:
+            seqs = env['ir.sequence'].sudo().search(domain)
+            if seqs.exists():
+                seqs.write({'number_next': 1})
+        except Exception as e:
+            _logger.warning('reset sequence data error: %s,%s', line, e)
+    return True
+
+_remove_data(env, ['mrp.workcenter.productivity','mrp.workorder','mrp.production.workcenter.line','change.production.qty','mrp.production','mrp.production.product.line','mrp.unbuild','change.production.qty','sale.forecast.indirect','sale.forecast'], ['mrp.'])
+      ]]></field>
+    </record>
+
+    <record id="action_remove_mrp_bom" model="ir.actions.server">
+      <field name="name">Remove MRP BOMs</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+def _remove_data(env, models_list, seqs_list):
+    for line in models_list:
+        try:
+            if not env['ir.model']._get(line):
+                continue
+        except Exception as e:
+            _logger.warning('remove data error get ir.model: %s,%s', line, e)
+            continue
+        obj_name = line
+        try:
+            obj = env.registry.models.get(obj_name)
+        except Exception:
+            obj = None
+        if not obj:
+            t_name = obj_name.replace('.', '_')
+        else:
+            # try to get table name via ir.model._get
+            try:
+                t = env['ir.model']._get(obj_name)
+                t_name = t.model.replace('.', '_')
+            except Exception:
+                t_name = obj_name.replace('.', '_')
+        sql = "delete from %s" % t_name
+        try:
+            env.cr.execute(sql)
+            try:
+                env.cr.commit()
+            except Exception:
+                # commit might be restricted on SaaS, ignore if fails
+                pass
+        except Exception as e:
+            _logger.warning('remove data error: %s,%s', line, e)
+    for line in seqs_list:
+        domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+        try:
+            seqs = env['ir.sequence'].sudo().search(domain)
+            if seqs.exists():
+                seqs.write({'number_next': 1})
+        except Exception as e:
+            _logger.warning('reset sequence data error: %s,%s', line, e)
+    return True
+
+_remove_data(env, ['mrp.bom.line','mrp.bom'], [])
+      ]]></field>
+    </record>
+
+    <record id="action_remove_inventory" model="ir.actions.server">
+      <field name="name">Remove Inventory Data</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+def _remove_data(env, models_list, seqs_list):
+    for line in models_list:
+        try:
+            if not env['ir.model']._get(line):
+                continue
+        except Exception as e:
+            _logger.warning('remove data error get ir.model: %s,%s', line, e)
+            continue
+        obj_name = line
+        try:
+            obj = env.registry.models.get(obj_name)
+        except Exception:
+            obj = None
+        if not obj:
+            t_name = obj_name.replace('.', '_')
+        else:
+            # try to get table name via ir.model._get
+            try:
+                t = env['ir.model']._get(obj_name)
+                t_name = t.model.replace('.', '_')
+            except Exception:
+                t_name = obj_name.replace('.', '_')
+        sql = "delete from %s" % t_name
+        try:
+            env.cr.execute(sql)
+            try:
+                env.cr.commit()
+            except Exception:
+                # commit might be restricted on SaaS, ignore if fails
+                pass
+        except Exception as e:
+            _logger.warning('remove data error: %s,%s', line, e)
+    for line in seqs_list:
+        domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+        try:
+            seqs = env['ir.sequence'].sudo().search(domain)
+            if seqs.exists():
+                seqs.write({'number_next': 1})
+        except Exception as e:
+            _logger.warning('reset sequence data error: %s,%s', line, e)
+    return True
+
+_remove_data(env, ['stock.quant','stock.move.line','stock.package_level','stock.quantity.history','stock.quant.package','stock.move','stock.picking','stock.scrap','stock.picking.batch','stock.inventory.line','stock.inventory','stock.valuation.layer','stock.production.lot','procurement.group'], ['stock.','picking.','procurement.group','product.tracking.default','WH/'])
+      ]]></field>
+    </record>
+
+    <record id="action_remove_account" model="ir.actions.server">
+      <field name="name">Remove Accounting Data</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+def _remove_data(env, models_list, seqs_list):
+    for line in models_list:
+        try:
+            if not env['ir.model']._get(line):
+                continue
+        except Exception as e:
+            _logger.warning('remove data error get ir.model: %s,%s', line, e)
+            continue
+        obj_name = line
+        try:
+            obj = env.registry.models.get(obj_name)
+        except Exception:
+            obj = None
+        if not obj:
+            t_name = obj_name.replace('.', '_')
+        else:
+            # try to get table name via ir.model._get
+            try:
+                t = env['ir.model']._get(obj_name)
+                t_name = t.model.replace('.', '_')
+            except Exception:
+                t_name = obj_name.replace('.', '_')
+        sql = "delete from %s" % t_name
+        try:
+            env.cr.execute(sql)
+            try:
+                env.cr.commit()
+            except Exception:
+                # commit might be restricted on SaaS, ignore if fails
+                pass
+        except Exception as e:
+            _logger.warning('remove data error: %s,%s', line, e)
+    for line in seqs_list:
+        domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+        try:
+            seqs = env['ir.sequence'].sudo().search(domain)
+            if seqs.exists():
+                seqs.write({'number_next': 1})
+        except Exception as e:
+            _logger.warning('reset sequence data error: %s,%s', line, e)
+    return True
+
+res = _remove_data(env, ['payment.transaction','account.bank.statement.line','account.payment','account.analytic.line','account.analytic.account','account.partial.reconcile','account.move.line','hr.expense.sheet','account.move'], [])
+# reset sequences matching company and prefixes
+try:
+    domain = [('company_id','=', env.company.id), '|', ('code','ilike','account.%'), '|', ('prefix','ilike','BNK1/%'), '|', ('prefix','ilike','CSH1/%'), '|', ('prefix','ilike','INV/%'), '|', ('prefix','ilike','EXCH/%'), '|', ('prefix','ilike','MISC/%'), '|', ('prefix','ilike','账单/%'), ('prefix','ilike','杂项/%')]
+    seqs = env['ir.sequence'].search(domain)
+    if seqs.exists():
+        seqs.write({'number_next':1})
+except Exception as e:
+    _logger.error('reset sequence data error: %s,%s', domain, e)
+res
+      ]]></field>
+    </record>
+
+    <record id="action_remove_account_chart" model="ir.actions.server">
+      <field name="name">Reset Account Chart and Clean</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+company_id = env.company.id
+# prepare removes
+models_list = ['res.partner.bank','account.move.line','account.invoice','account.payment','account.bank.statement','account.tax.account.tag','account.tax','account.account.account.tag','wizard_multi_charts_accounts','account.journal','account.account']
+try:
+    # find field ids for product.template taxes
+    try:
+        field1 = env['ir.model.fields']._get('product.template', 'taxes_id').id
+        field2 = env['ir.model.fields']._get('product.template', 'supplier_taxes_id').id
+    except Exception:
+        field1 = None
+        field2 = None
+    if field1 and field2:
+        sql = "delete from ir_default where (field_id = %s or field_id = %s) and company_id=%d" % (field1, field2, company_id)
+        sql2 = "update account_journal set bank_account_id=NULL where company_id=%d;" % company_id
+        try:
+            env.cr.execute(sql)
+            env.cr.execute(sql2)
+            try:
+                env.cr.commit()
+            except Exception:
+                pass
+        except Exception as e:
+            _logger.error('remove data error: %s,%s', 'account_chart: set tax and account_journal', e)
+except Exception as e:
+    _logger.error('remove data error: %s,%s', 'account_chart', e)
+# pos.config journal reset
+if env['ir.model']._get('pos.config'):
+    try:
+        env['pos.config'].write({'journal_id': False})
+    except Exception:
+        pass
+# reset partner properties
+try:
+    recs = env['res.partner'].search([])
+    for r in recs:
+        try:
+            r.write({'property_account_receivable_id': None,'property_account_payable_id': None})
+        except Exception:
+            pass
+except Exception as e:
+    _logger.error('remove data error: %s,%s', 'account_chart', e)
+# reset product category properties
+try:
+    recs = env['product.category'].search([])
+    for r in recs:
+        try:
+            r.write({
+                'property_account_income_categ_id': None,
+                'property_account_expense_categ_id': None,
+                'property_account_creditor_price_difference_categ': None,
+                'property_stock_account_input_categ_id': None,
+                'property_stock_account_output_categ_id': None,
+                'property_stock_valuation_account_id': None,
+            })
+        except Exception:
+            pass
+except Exception:
+    pass
+# reset product template properties
+try:
+    recs = env['product.template'].search([])
+    for r in recs:
+        try:
+            r.write({'property_account_income_id': None,'property_account_expense_id': None})
+        except Exception:
+            pass
+except Exception:
+    pass
+# reset stock location valuation accounts
+try:
+    recs = env['stock.location'].search([])
+    for r in recs:
+        try:
+            r.write({'valuation_in_account_id': None,'valuation_out_account_id': None})
+        except Exception:
+            pass
+except Exception:
+    pass
+# finally remove models via delete
+for m in models_list:
+    try:
+        if not env['ir.model']._get(m):
+            continue
+    except Exception:
+        continue
+    try:
+        t = env['ir.model']._get(m)
+        table = t.model.replace('.', '_')
+    except Exception:
+        table = m.replace('.', '_')
+    try:
+        env.cr.execute('delete from %s' % table)
+        try:
+            env.cr.commit()
+        except Exception:
+            pass
+    except Exception as e:
+        _logger.error('remove data error: %s,%s', m, e)
+# return True
+
+      ]]></field>
+    </record>
+
+    <record id="action_remove_project" model="ir.actions.server">
+      <field name="name">Remove Project Data</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+def _remove_data(env, models_list, seqs_list):
+    for line in models_list:
+        try:
+            if not env['ir.model']._get(line):
+                continue
+        except Exception as e:
+            _logger.warning('remove data error get ir.model: %s,%s', line, e)
+            continue
+        obj_name = line
+        try:
+            obj = env.registry.models.get(obj_name)
+        except Exception:
+            obj = None
+        if not obj:
+            t_name = obj_name.replace('.', '_')
+        else:
+            # try to get table name via ir.model._get
+            try:
+                t = env['ir.model']._get(obj_name)
+                t_name = t.model.replace('.', '_')
+            except Exception:
+                t_name = obj_name.replace('.', '_')
+        sql = "delete from %s" % t_name
+        try:
+            env.cr.execute(sql)
+            try:
+                env.cr.commit()
+            except Exception:
+                # commit might be restricted on SaaS, ignore if fails
+                pass
+        except Exception as e:
+            _logger.warning('remove data error: %s,%s', line, e)
+    for line in seqs_list:
+        domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+        try:
+            seqs = env['ir.sequence'].sudo().search(domain)
+            if seqs.exists():
+                seqs.write({'number_next': 1})
+        except Exception as e:
+            _logger.warning('reset sequence data error: %s,%s', line, e)
+    return True
+
+_remove_data(env, ['account.analytic.line','project.task','project.forecast','project.project'], [])
+      ]]></field>
+    </record>
+
+    <record id="action_remove_quality" model="ir.actions.server">
+      <field name="name">Remove Quality Data</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+def _remove_data(env, models_list, seqs_list):
+    for line in models_list:
+        try:
+            if not env['ir.model']._get(line):
+                continue
+        except Exception as e:
+            _logger.warning('remove data error get ir.model: %s,%s', line, e)
+            continue
+        obj_name = line
+        try:
+            obj = env.registry.models.get(obj_name)
+        except Exception:
+            obj = None
+        if not obj:
+            t_name = obj_name.replace('.', '_')
+        else:
+            # try to get table name via ir.model._get
+            try:
+                t = env['ir.model']._get(obj_name)
+                t_name = t.model.replace('.', '_')
+            except Exception:
+                t_name = obj_name.replace('.', '_')
+        sql = "delete from %s" % t_name
+        try:
+            env.cr.execute(sql)
+            try:
+                env.cr.commit()
+            except Exception:
+                # commit might be restricted on SaaS, ignore if fails
+                pass
+        except Exception as e:
+            _logger.warning('remove data error: %s,%s', line, e)
+    for line in seqs_list:
+        domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+        try:
+            seqs = env['ir.sequence'].sudo().search(domain)
+            if seqs.exists():
+                seqs.write({'number_next': 1})
+        except Exception as e:
+            _logger.warning('reset sequence data error: %s,%s', line, e)
+    return True
+
+_remove_data(env, ['quality.check','quality.alert'], ['quality.check','quality.alert'])
+      ]]></field>
+    </record>
+
+    <record id="action_remove_quality_setting" model="ir.actions.server">
+      <field name="name">Remove Quality Settings</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+def _remove_data(env, models_list, seqs_list):
+    for line in models_list:
+        try:
+            if not env['ir.model']._get(line):
+                continue
+        except Exception as e:
+            _logger.warning('remove data error get ir.model: %s,%s', line, e)
+            continue
+        obj_name = line
+        try:
+            obj = env.registry.models.get(obj_name)
+        except Exception:
+            obj = None
+        if not obj:
+            t_name = obj_name.replace('.', '_')
+        else:
+            # try to get table name via ir.model._get
+            try:
+                t = env['ir.model']._get(obj_name)
+                t_name = t.model.replace('.', '_')
+            except Exception:
+                t_name = obj_name.replace('.', '_')
+        sql = "delete from %s" % t_name
+        try:
+            env.cr.execute(sql)
+            try:
+                env.cr.commit()
+            except Exception:
+                # commit might be restricted on SaaS, ignore if fails
+                pass
+        except Exception as e:
+            _logger.warning('remove data error: %s,%s', line, e)
+    for line in seqs_list:
+        domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+        try:
+            seqs = env['ir.sequence'].sudo().search(domain)
+            if seqs.exists():
+                seqs.write({'number_next': 1})
+        except Exception as e:
+            _logger.warning('reset sequence data error: %s,%s', line, e)
+    return True
+
+_remove_data(env, ['quality.point','quality.alert.stage','quality.alert.team','quality.point.test_type','quality.reason','quality.tag'], [])
+      ]]></field>
+    </record>
+
+    <record id="action_remove_website" model="ir.actions.server">
+      <field name="name">Remove Website Data</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+def _remove_data(env, models_list, seqs_list):
+    for line in models_list:
+        try:
+            if not env['ir.model']._get(line):
+                continue
+        except Exception as e:
+            _logger.warning('remove data error get ir.model: %s,%s', line, e)
+            continue
+        obj_name = line
+        try:
+            obj = env.registry.models.get(obj_name)
+        except Exception:
+            obj = None
+        if not obj:
+            t_name = obj_name.replace('.', '_')
+        else:
+            # try to get table name via ir.model._get
+            try:
+                t = env['ir.model']._get(obj_name)
+                t_name = t.model.replace('.', '_')
+            except Exception:
+                t_name = obj_name.replace('.', '_')
+        sql = "delete from %s" % t_name
+        try:
+            env.cr.execute(sql)
+            try:
+                env.cr.commit()
+            except Exception:
+                # commit might be restricted on SaaS, ignore if fails
+                pass
+        except Exception as e:
+            _logger.warning('remove data error: %s,%s', line, e)
+    for line in seqs_list:
+        domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+        try:
+            seqs = env['ir.sequence'].sudo().search(domain)
+            if seqs.exists():
+                seqs.write({'number_next': 1})
+        except Exception as e:
+            _logger.warning('reset sequence data error: %s,%s', line, e)
+    return True
+
+_remove_data(env, ['blog.tag.category','blog.tag','blog.post','blog.blog','product.wishlist','website.published.multi.mixin','website.published.mixin','website.multi.mixin','website.visitor','website.redirect','website.seo.metadata'], [])
+      ]]></field>
+    </record>
+
+    <record id="action_remove_message" model="ir.actions.server">
+      <field name="name">Remove Mail/Message Data</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+def _remove_data(env, models_list, seqs_list):
+    for line in models_list:
+        try:
+            if not env['ir.model']._get(line):
+                continue
+        except Exception as e:
+            _logger.warning('remove data error get ir.model: %s,%s', line, e)
+            continue
+        obj_name = line
+        try:
+            obj = env.registry.models.get(obj_name)
+        except Exception:
+            obj = None
+        if not obj:
+            t_name = obj_name.replace('.', '_')
+        else:
+            # try to get table name via ir.model._get
+            try:
+                t = env['ir.model']._get(obj_name)
+                t_name = t.model.replace('.', '_')
+            except Exception:
+                t_name = obj_name.replace('.', '_')
+        sql = "delete from %s" % t_name
+        try:
+            env.cr.execute(sql)
+            try:
+                env.cr.commit()
+            except Exception:
+                # commit might be restricted on SaaS, ignore if fails
+                pass
+        except Exception as e:
+            _logger.warning('remove data error: %s,%s', line, e)
+    for line in seqs_list:
+        domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+        try:
+            seqs = env['ir.sequence'].sudo().search(domain)
+            if seqs.exists():
+                seqs.write({'number_next': 1})
+        except Exception as e:
+            _logger.warning('reset sequence data error: %s,%s', line, e)
+    return True
+
+_remove_data(env, ['mail.message','mail.followers','mail.activity'], [])
+      ]]></field>
+    </record>
+
+    <record id="action_remove_all" model="ir.actions.server">
+      <field name="name">Remove All Data</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+try:
+    env.ref('nr_data_remove.action_remove_account').run()
+except Exception as e:
+    _logger.error('error calling action remove_account: %s', e)
+try:
+    env.ref('nr_data_remove.action_remove_quality').run()
+except Exception as e:
+    _logger.error('error calling action remove_quality: %s', e)
+try:
+    env.ref('nr_data_remove.action_remove_website').run()
+except Exception as e:
+    _logger.error('error calling action remove_website: %s', e)
+try:
+    env.ref('nr_data_remove.action_remove_quality_setting').run()
+except Exception as e:
+    _logger.error('error calling action remove_quality_setting: %s', e)
+try:
+    env.ref('nr_data_remove.action_remove_inventory').run()
+except Exception as e:
+    _logger.error('error calling action remove_inventory: %s', e)
+try:
+    env.ref('nr_data_remove.action_remove_purchase').run()
+except Exception as e:
+    _logger.error('error calling action remove_purchase: %s', e)
+try:
+    env.ref('nr_data_remove.action_remove_mrp').run()
+except Exception as e:
+    _logger.error('error calling action remove_mrp: %s', e)
+try:
+    env.ref('nr_data_remove.action_remove_sales').run()
+except Exception as e:
+    _logger.error('error calling action remove_sales: %s', e)
+try:
+    env.ref('nr_data_remove.action_remove_project').run()
+except Exception as e:
+    _logger.error('error calling action remove_project: %s', e)
+try:
+    env.ref('nr_data_remove.action_remove_pos').run()
+except Exception as e:
+    _logger.error('error calling action remove_pos: %s', e)
+try:
+    env.ref('nr_data_remove.action_remove_expense').run()
+except Exception as e:
+    _logger.error('error calling action remove_expense: %s', e)
+try:
+    env.ref('nr_data_remove.action_remove_account_chart').run()
+except Exception as e:
+    _logger.error('error calling action remove_account_chart: %s', e)
+try:
+    env.ref('nr_data_remove.action_remove_message').run()
+except Exception as e:
+    _logger.error('error calling action remove_message: %s', e)
+      ]]></field>
+    </record>
+
+    <record id="action_reset_cat_loc_name" model="ir.actions.server">
+      <field name="name">Reset Category and Location Complete Name</field>
+      <field name="model_id" ref="base.model_res_config_settings"/>
+      <field name="state">code</field>
+      <field name="code"><![CDATA[
+try:
+    ids = env['product.category'].search([('parent_id','!=',False)], order='complete_name')
+    for rec in ids:
+        try:
+            rec._compute_complete_name()
+        except Exception:
+            pass
+except Exception:
+    pass
+try:
+    ids = env['stock.location'].search([('location_id','!=',False),('usage','!=','views')], order='complete_name')
+    for rec in ids:
+        try:
+            rec._compute_complete_name()
+        except Exception:
+            pass
+except Exception:
+    pass
+
+      ]]></field>
+    </record>
+
+  </data>
+</odoo>
