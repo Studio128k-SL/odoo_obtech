@@ -9,7 +9,7 @@ services:
       - db
     volumes:
       - obtech-odoo-data:/var/lib/odoo
-      #- ./data/odoo/config:/etc/odoo
+      - ./data/odoo/config:/etc/odoo
       - ./data/odoo/addons:/mnt/extra-addons
       - ./data/odoo/custom_addons:/mnt/custom-addons
     environment:
