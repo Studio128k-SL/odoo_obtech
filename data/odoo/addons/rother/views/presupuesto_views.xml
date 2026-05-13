@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="rother_presupuesto_tree_view" model="ir.ui.view">
+        <field name="name">rother.presupuesto.tree</field>
+        <field name="model">rother.presupuesto</field>
+        <field name="arch" type="xml">
+            <list string="Presupuestos">
+                <field name="name" string="Número"/>
+                <field name="fecha" string="Fecha"/>
+                <field name="importe_total" string="Importe Total"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="rother_presupuesto_form_view" model="ir.ui.view">
+        <field name="name">rother.presupuesto.form</field>
+        <field name="model">rother.presupuesto</field>
+        <field name="arch" type="xml">
+            <form string="Presupuesto">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <field name="fecha" string="Fecha"/>
+                        <field name="importe_total" string="Importe Total" readonly="1"/>
+                    </group>
+                    <field name="linea_ids" widget="section_and_note_one2many">
+                        <list editable="bottom" string="Líneas">
+                            <control>
+                                <create name="add_product" string="Añadir producto"/>
+                                <create name="add_section" string="Añadir sección" context="{'default_display_type': 'line_section'}"/>
+                            </control>
+                            <field name="sequence" widget="handle"/>
+                            <field name="display_type" column_invisible="True"/>
+                            <field name="name" string="Descripción" widget="section_and_note_text"/>
+                            <field name="product_id" string="Producto"/>
+                            <field name="cantidad" string="Cantidad"/>
+                            <field name="precio_unitario" string="Precio Unitario"/>
+                            <field name="taxes_id" string="Impuestos" widget="many2many_tags"/>
+                            <field name="importe_total" string="Importe Total" readonly="1"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="rother_presupuesto_action" model="ir.actions.act_window">
+        <field name="name">Presupuestos</field>
+        <field name="res_model">rother.presupuesto</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="rother_gestion_menu_root"
+              name="Gestión"
+              parent="rother_menu_root"
+              sequence="2"/>
+
+    <menuitem id="rother_menu_presupuestos"
+              name="Presupuestos"
+              parent="rother_gestion_menu_root"
+              action="rother_presupuesto_action"
+              sequence="1"/>
+
+</odoo>

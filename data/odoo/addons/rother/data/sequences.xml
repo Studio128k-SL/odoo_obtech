@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_rother_presupuesto" model="ir.sequence">
+        <field name="name">Presupuesto Rother</field>
+        <field name="code">rother.presupuesto</field>
+        <field name="prefix">P</field>
+        <field name="padding">5</field>
+    </record>
+
+    <record id="seq_rother_gpv" model="ir.sequence">
+        <field name="name">GPV Rother</field>
+        <field name="code">rother.gpv</field>
+        <field name="prefix">P</field>
+        <field name="padding">4</field>
+    </record>
+</odoo>
