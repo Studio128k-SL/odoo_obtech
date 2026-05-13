@@ -1,0 +1,163 @@
+<<<<<<< HEAD:report/report_label_dymo.xml
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Formato del papel -->
+    <record id="rother_paperformat_dymo" model="report.paperformat">
+        <field name="name">Dymo 30x62</field>
+        <field name="format">custom</field>
+        <field name="page_height">30</field>
+        <field name="page_width">62</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line">False</field>
+        <field name="header_spacing">3</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <!-- Definición del informe -->
+    <record id="rother_product_label_dymo" model="ir.actions.report">
+        <field name="name">Etiqueta Dymo Rother</field>
+        <field name="model">product.template</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">rother.report_label_dymo_rother</field>
+        <field name="report_file">rother.report_label_dymo_rother</field>
+        <field name="binding_model_id" ref="product.model_product_template"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="rother_paperformat_dymo"/>
+    </record>
+
+    <!-- Template de la etiqueta -->
+    <template id="report_label_dymo_rother">
+        <t t-call="web.html_container">
+            <style>
+                body, html { margin: 2; padding: 0; }
+                .label-container { 
+                    width: 79%; 
+                    height: 100%; 
+                    padding: 1; 
+                    display: flex; 
+                    flex-direction: column;
+                    justify-content: space-between;
+                    position: relative;
+                    overflow: hidden; 
+                    box-sizing: border-box; 
+                    border-right: 1px dashed black;
+                    margin-right: 3px;
+                }
+                .barcode-section { text-align: center; width: 100%;}
+                .barcode-section img { height: auto; width: 100%; margin-top: 2mm; max-height:16mm }
+                .barcode-number { font-size: 9pt; text-align: center; margin-top: 3px;}
+                .product-name { 
+                    font-size: 10pt; 
+                    font-weight: bold; 
+                    text-align: left; 
+                    overflow: hidden;  
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    width: 100%; 
+                    margin-top: 1mm;
+                    margin-left: 5px;
+                    padding-right: 2px
+                }
+                .references { 
+                    font-size: 10pt; 
+                    width: 100%;
+                    overflow: hidden;
+                    margin-top: 3mm;
+                }
+                .references .ref-left {
+                    float: left;
+                    margin-left: 10px;
+                }
+                .references .ref-right {
+                    float: right;
+                    margin-right: 15px;
+                }
+            </style>
+            <t t-foreach="docs" t-as="o">
+                <div class="label-container">
+                    <div class="barcode-section">
+                        <t t-if="o.barcode">
+                                <img t-att-src="'http://172.17.0.1/report/barcode/Code128/' + o.barcode"/>                            
+                            <div class="barcode-number">
+                                <span t-out="o.x_Ref_fab"/>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="product-name">
+                        <span t-field="o.name"/>
+                    </div>
+                    <div class="references">
+                        <span class="ref-left" t-field="o.default_code"/>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+=======
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Definición del informe -->
+    <record id="rother_product_label_dymo" model="ir.actions.report">
+        <field name="name">Etiqueta Dymo Rother</field>
+        <field name="model">product.template</field>
+        <field name="report-type">qweb-pdf</field>
+        <field name="report_name">rother.report_label_dymo_rother</field>
+        <field name="report_file">rother.report_label_dymo_rother</field>
+        <field name="binding_model_id" ref="product.model_product_template" />
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="rother_paperformat_dymo" />
+    </record>
+
+    <!-- Formato del papel -->
+    <record id="rother_paperformat_dymo" model="report.paperformat">
+        <field name="name">Dymo 30x62</field>
+        <field name="default_paper_format">custom</field>
+        <field name="format">custom</field>
+        <field name="page_height">30</field>
+        <field name="page_width">62</field>
+        <field name="orientation">Vertical</field>
+        <field name="margin-top">1</field>
+        <field name="margin-bottom">1</field>
+        <field name="margin-left">1</field>
+        <field name="margin-right">1</field>
+        <field name="header_line">False</field>
+        <field name="header_spacing">3</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <!-- Template de la etiqueta -->
+    <template id="report_label_dymo_rother">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div style="width: 62mm; height: 30mm; padding: 1mm; display:flex; flex-direction: column; justify-content: space-between; overflow: hidden; page-break-after: always;">
+                    <!-- Código de barras -->
+                    <div style ="text-align: center;">
+                        <t t-if:"o.barcode">
+                            <img t-att-src="'/report/barcode/Code128/' + o.barcode" style="height: 12mm; width: 100%" />
+                            <div style="font-size: 7pt; margin-top: 0.5mm;">
+                                <span t-out="o.barcode" />
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- Nombre del producto -->
+                    <div style="font-size: 7pt; font-weight: bold; line-height: 1.1; overflow: hidden;">
+                        <span t-field="o.name"/>
+                    </div>
+
+                    <!-- Referencia y Referencia Fabricante -->
+                    <div style="font-size: 6pt; display:flex; justify-content: space-between;">
+                        <span t-field="o.default_code" />
+                        <span t-field="o.x_Ref_fab" />
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+>>>>>>> caf21e96dfddca395d7cbeaec2510e747dc8572e:Odoo-Modules/Rother/report/report_label_dymo.xml
+</odoo>
