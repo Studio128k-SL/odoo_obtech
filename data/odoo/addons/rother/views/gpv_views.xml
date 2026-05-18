@@ -21,56 +21,110 @@
         <field name="arch" type="xml">
             <form string="Grupo de Compra">
                 <header>
-                    <button name="action_cargar_lineas"
-                            string="Cargar Líneas"
-                            type="object"
-                            class="btn-primary" />
                     <button name="action_generar_pv"
                             string="Generar PV"
                             type="object"
-                            class="btn-secondary" />
+                            class="btn-primary"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
                         <h1>
-                            <field name="name" readonly="1" />
+                            <field name="name" readonly="1"/>
                         </h1>
                     </div>
                     <group>
-                        <field name="fecha" string="Fecha" />
-                        <field name="entregar_a" string="Entregar a" />
+                        <field name="fecha" string="Fecha"/>
+                        <field name="entregar_a" string="Entregar a"/>
+                        <field name="importe_total" string="Importe Total" readonly="1"/>
                     </group>
                     <notebook>
-                        <page string="Presupuestos">
-                            <field name="presupuesto_ids">
-                                <list>
-                                    <field name="name" string="Número"/>
-                                    <field name="fecha" string="Fecha" />
-                                    <field name="importe_total" string="Importe Total"/>
-                                </list>
-                            </field>
-                        </page>
                         <page string="Líneas">
-                            <field name="linea_ids">
-                                <list editable="bottom">
-                                    <field name="seccion_nombre" string="Proyecto" readonly="1"/>
-                                    <field name="product_id" string="Producto" readonly="1"/>
-                                    <field name="nombre" string="Nombre" readonly="1"/>
-                                    <field name="cantidad" string="Cantidad" readonly="1"/>
-                                    <field name="precio_unitario" string="Precio Unitario" readonly="1"/>
-                                    <field name="taxes_id" string="Impuestos" widget="many2many_tags" readonly="1" />
-                                    <field name="importe_total" string="Importe Total" readonly="1"/>
-                                    <field name="proveedor_id" string="Proveedor" />
+                            <field name="gpv_linea_ids">
+                                <list editable="bottom" 
+                                    decoration-bf="display_type == 'line_section'"
+                                    decoration-it="display_type == 'line_note'">
+                                    <control>
+                                        <create name="add_product" string="Añadir producto"/>
+                                        <create name="add_section" string="Añadir sección" context="{'default_display_type': 'line_section'}"/>
+                                        <create name="add_note" string="Añadir nota" context="{'default_display_type': 'line_note'}"/>
+                                    </control>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="display_type" column_invisible="True"/>
+                                    <field name="project_id" string="Proyecto"
+                                        invisible="display_type != 'line_section'"/>
+                                    <field name="name" string="Descripción"/>
+                                    <field name="product_id" string="Producto"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="cantidad" string="Cantidad"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="precio_unitario" string="Precio Unitario"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="taxes_id" string="Impuestos" widget="many2many_tags"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="importe_total" string="Importe Total" readonly="1"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="proveedor_id" string="Proveedor"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
                                 </list>
                             </field>
                         </page>
                         <page string="Pedidos Virtuales">
                             <field name="pv_ids">
                                 <list>
-                                    <field name="proveedor_id" string="Proveedor" />
-                                    <field name="referencia_proveedor" string="Referencia Proveedor" />
-                                    <field name="llegada_prevista" string="Llegada Prevista" />
+                                    <field name="proveedor_id" string="Proveedor"/>
+                                    <field name="referencia_proveedor" string="Referencia Proveedor"/>
+                                    <field name="llegada_prevista" string="Llegada Prevista"/>
+                                    <field name="state" string="Estado"/>
                                 </list>
+                                <form>
+                                    <header>
+                                        <button name="action_crear_pedido"
+                                                string="Crear Pedido"
+                                                type="object"
+                                                class="btn-primary"
+                                                invisible="state != 'draft'"/>
+                                        <button name="action_confirmar_pedido"
+                                                string="Confirmar Pedido"
+                                                type="object"
+                                                class="btn-primary"
+                                                invisible="state != 'order_created'"/>
+                                        <field name="state" widget="statusbar"
+                                            statusbar_visible="draft,order_created,confirmed"/>
+                                    </header>
+                                    <sheet>
+                                        <group>
+                                            <group>
+                                                <field name="proveedor_id" string="Proveedor"/>
+                                                <field name="referencia_proveedor" string="Referencia Proveedor"/>
+                                                <field name="referencia_gpv" string="Referencia GPV" readonly="1"/>
+                                            </group>
+                                            <group>
+                                                <field name="llegada_prevista" string="Llegada Prevista"/>
+                                                <field name="purchase_order_id" string="Pedido de Compra" readonly="1"/>
+                                            </group>
+                                        </group>
+                                        <field name="linea_ids">
+                                            <list editable="bottom"
+                                                decoration-bf="display_type == 'line_section'"
+                                                decoration-it="display_type == 'line_note'">
+                                                <field name="display_type" column_invisible="True"/>
+                                                <field name="seccion_nombre" string="Proyecto" readonly="1"
+                                                    invisible="display_type != 'line_section'"/>
+                                                <field name="nombre" string="Descripción" readonly="1"/>
+                                                <field name="product_id" string="Producto" readonly="1"
+                                                    invisible="display_type in ('line_section', 'line_note')"/>
+                                                <field name="cantidad" string="Cantidad" readonly="1"
+                                                    invisible="display_type in ('line_section', 'line_note')"/>
+                                                <field name="precio_unitario" string="Precio Unitario" readonly="1"
+                                                    invisible="display_type in ('line_section', 'line_note')"/>
+                                                <field name="taxes_id" string="Impuestos" widget="many2many_tags" readonly="1"
+                                                    invisible="display_type in ('line_section', 'line_note')"/>
+                                                <field name="importe_total" string="Importe Total" readonly="1"
+                                                    invisible="display_type in ('line_section', 'line_note')"/>
+                                            </list>
+                                        </field>
+                                    </sheet>
+                                </form>
                             </field>
                         </page>
                     </notebook>
@@ -117,7 +171,25 @@
     <!-- Submenú GPV -->
     <menuitem id="rother_menu_gpv"
             name="Grupos de Compra"
-            parent="rother_gestion_menu_root"
+            parent="rother_menu_root"
             action="rother_gpv_action"
             sequence="2" />
+
+    <!-- Menú Compras dentro de Rother -->
+    <menuitem id="rother_compras_menu"
+            name="Compras"
+            parent="rother_menu_root"
+            sequence="3"/>
+
+    <menuitem id="rother_menu_solicitudes"
+            name="Solicitudes de Presupuesto"
+            parent="rother_compras_menu"
+            action="purchase.purchase_rfq"
+            sequence="1"/>
+
+    <menuitem id="rother_menu_pedidos_compra"
+            name="Pedidos de Compra"
+            parent="rother_compras_menu"
+            action="purchase.purchase_form_action"
+            sequence="2"/>
 </odoo>

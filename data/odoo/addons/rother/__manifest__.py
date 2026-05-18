@@ -5,7 +5,7 @@
     'summary': 'Módulo de productos de Rother',
     'author': 'Rother Industries & Technologies',
     'license': 'LGPL-3',
-    'depends': ['product', 'stock', 'purchase', 'sale', 'mail'],
+    'depends': ['product', 'stock', 'purchase', 'sale', 'mail', 'project'],
     'data': [
         'security/ir.model.access.csv',
         'data/sequences.xml',

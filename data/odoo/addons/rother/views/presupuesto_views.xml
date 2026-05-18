@@ -54,16 +54,4 @@
         <field name="res_model">rother.presupuesto</field>
         <field name="view_mode">list,form</field>
     </record>
-
-    <menuitem id="rother_gestion_menu_root"
-              name="Gestión"
-              parent="rother_menu_root"
-              sequence="2"/>
-
-    <menuitem id="rother_menu_presupuestos"
-              name="Presupuestos"
-              parent="rother_gestion_menu_root"
-              action="rother_presupuesto_action"
-              sequence="1"/>
-
 </odoo>

@@ -10,7 +10,7 @@
     <record id="seq_rother_gpv" model="ir.sequence">
         <field name="name">GPV Rother</field>
         <field name="code">rother.gpv</field>
-        <field name="prefix">P</field>
+        <field name="prefix">GPV</field>
         <field name="padding">4</field>
     </record>
 </odoo>

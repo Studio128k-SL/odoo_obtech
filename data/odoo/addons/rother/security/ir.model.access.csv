@@ -6,3 +6,4 @@ access_rother_gpv,access_rother_gpv,rother.model_rother_gpv,base.group_user,1,1,
 access_rother_gpv_linea,access_rother_gpv_linea,rother.model_rother_gpv_linea,base.group_user,1,1,1,1
 access_rother_pv,access_rother_pv,rother.model_rother_pv,base.group_user,1,1,1,1
 access_rother_pv_linea,access_rother_pv_linea,rother.model_rother_pv_linea,base.group_user,1,1,1,1
+access_rother_gpv_linea2,access_rother_gpv_linea2,rother.model_rother_gpv_linea2,base.group_user,1,1,1,1
