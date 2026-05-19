@@ -27,55 +27,73 @@ class RotherGPV(models.Model):
 
     def action_generar_pv(self):
         for rec in self:
-
-            #Se eliminan los PV existentes para regenerarlos
             rec.pv_ids.unlink()
 
-            # Ordenamos las líneas por secuencia 
             lineas_ordenadas = rec.gpv_linea_ids.sorted('sequence')
 
-            # Construimos un mapa: Cada línea -> proveedor al que pertenece
-            # Las secciones y notas "heredan" el proveedor del último producto visto
-            lineas_por_proveedor = {} 
+            lineas_por_proveedor = {}
             proveedor_actual = None
 
-            # Buffer que guarda la sección actual y sus notas inmediatas,
-            # para volcarlas a cada proveedor de la sección
-            buffer_seccion = []
+            # Sección de proyecto actual (con project_id)
+            seccion_proyecto_actual = None
+            # Sección de documentación actual (sin project_id)
+            seccion_doc_actual = None
+            # Notas acumuladas tras la sección de documentación, antes del primer producto
+            notas_doc_actual = []
+
+            # Rastrea qué proveedores ya recibieron la sección de proyecto actual
+            proyecto_volcado_a = set()
+            # Rastrea qué proveedores ya recibieron la sección de doc actual + sus notas previas
+            doc_volcado_a = set()
 
             for linea in lineas_ordenadas:
-                
-                if linea.display_type == 'line_section':
-                    # Nueva sección: resetear el buffer con esta sección.
-                    # El proveedor también se resetea porque cambia de contexto
-                    buffer_seccion = [linea]
+
+                if linea.display_type == 'line_section' and linea.project_id:
+                    # Nueva sección de proyecto: resetear todo el contexto
+                    seccion_proyecto_actual = linea
+                    seccion_doc_actual = None
+                    notas_doc_actual = []
                     proveedor_actual = None
-                
+                    proyecto_volcado_a = set()
+                    doc_volcado_a = set()
+
+                elif linea.display_type == 'line_section' and not linea.project_id:
+                    # Nueva sección de documentación dentro del proyecto actual
+                    seccion_doc_actual = linea
+                    notas_doc_actual = []
+                    proveedor_actual = None
+                    doc_volcado_a = set()
+
                 elif linea.display_type == 'line_note':
                     if proveedor_actual:
-                        # Nota inmediata a un producto
-                        # Se asocia al mismo proveedor que el producto
+                        # Nota tras producto: va al proveedor del producto anterior
                         lineas_por_proveedor[proveedor_actual].append(linea)
                     else:
-                        # Nota inmediata a una sección (sin producto)
-                        # Se guarda en el buffer para volcarse con la sección
-                        buffer_seccion.append(linea)
-                
+                        # Nota tras sección doc sin producto aún: acumular
+                        notas_doc_actual.append(linea)
+
                 else:
-                    # Linea de producto normal
+                    # Producto normal
                     proveedor_actual = linea.proveedor_id
 
                     if proveedor_actual:
                         if proveedor_actual not in lineas_por_proveedor:
-                            # Proveedor nuevo: Inicializa su lista y vuelca el buffer
-                            # (sección + notas de sección) si hay.
                             lineas_por_proveedor[proveedor_actual] = []
-                            if buffer_seccion:
-                                lineas_por_proveedor[proveedor_actual].extend(buffer_seccion)
-                        
+
+                        # Volcar sección de proyecto si aún no se volcó a este proveedor
+                        if proveedor_actual not in proyecto_volcado_a and seccion_proyecto_actual:
+                            lineas_por_proveedor[proveedor_actual].append(seccion_proyecto_actual)
+                            proyecto_volcado_a.add(proveedor_actual)
+
+                        # Volcar sección de doc + sus notas previas si aún no se volcó a este proveedor
+                        if proveedor_actual not in doc_volcado_a and seccion_doc_actual:
+                            lineas_por_proveedor[proveedor_actual].append(seccion_doc_actual)
+                            lineas_por_proveedor[proveedor_actual].extend(notas_doc_actual)
+                            doc_volcado_a.add(proveedor_actual)
+
                         lineas_por_proveedor[proveedor_actual].append(linea)
-            
-            # Crea un PV por cada proveedor con líneas ordenadas
+
+            # Crear un PV por proveedor con sus líneas en orden
             for proveedor, lineas in lineas_por_proveedor.items():
                 pv = self.env['rother.pv'].create({
                     'gpv_id': rec.id,
@@ -88,9 +106,8 @@ class RotherGPV(models.Model):
                         'nombre': linea.name,
                         'cantidad': linea.cantidad if not linea.display_type else 0,
                         'precio_unitario': linea.precio_unitario if not linea.display_type else 0,
-                        'taxes_id': [(6,0, linea.taxes_id.ids)] if not linea.display_type else [],
+                        'taxes_id': [(6, 0, linea.taxes_id.ids)] if not linea.display_type else [],
                         'importe_total': linea.importe_total if not linea.display_type else 0,
-                        # El nombre del proyecto solo se extrae en líneas de tipo sección
                         'seccion_nombre': linea.project_id.name if linea.display_type == 'line_section' and linea.project_id else '',
                         'display_type': linea.display_type or False,
                     })
