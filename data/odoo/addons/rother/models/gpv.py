@@ -27,27 +27,70 @@ class RotherGPV(models.Model):
 
     def action_generar_pv(self):
         for rec in self:
+
+            #Se eliminan los PV existentes para regenerarlos
             rec.pv_ids.unlink()
-            proveedores = rec.gpv_linea_ids.filtered(
-                lambda l: not l.display_type and l.proveedor_id
-            ).mapped('proveedor_id')
-            for proveedor in proveedores:
+
+            # Ordenamos las líneas por secuencia 
+            lineas_ordenadas = rec.gpv_linea_ids.sorted('sequence')
+
+            # Construimos un mapa: Cada línea -> proveedor al que pertenece
+            # Las secciones y notas "heredan" el proveedor del último producto visto
+            lineas_por_proveedor = {} 
+            proveedor_actual = None
+
+            # Buffer que guarda la sección actual y sus notas inmediatas,
+            # para volcarlas a cada proveedor de la sección
+            buffer_seccion = []
+
+            for linea in lineas_ordenadas:
+                
+                if linea.display_type == 'line_section':
+                    # Nueva sección: resetear el buffer con esta sección.
+                    # El proveedor también se resetea porque cambia de contexto
+                    buffer_seccion = [linea]
+                    proveedor_actual = None
+                
+                elif linea.display_type == 'line_note':
+                    if proveedor_actual:
+                        # Nota inmediata a un producto
+                        # Se asocia al mismo proveedor que el producto
+                        lineas_por_proveedor[proveedor_actual].append(linea)
+                    else:
+                        # Nota inmediata a una sección (sin producto)
+                        # Se guarda en el buffer para volcarse con la sección
+                        buffer_seccion.append(linea)
+                
+                else:
+                    # Linea de producto normal
+                    proveedor_actual = linea.proveedor_id
+
+                    if proveedor_actual:
+                        if proveedor_actual not in lineas_por_proveedor:
+                            # Proveedor nuevo: Inicializa su lista y vuelca el buffer
+                            # (sección + notas de sección) si hay.
+                            lineas_por_proveedor[proveedor_actual] = []
+                            if buffer_seccion:
+                                lineas_por_proveedor[proveedor_actual].extend(buffer_seccion)
+                        
+                        lineas_por_proveedor[proveedor_actual].append(linea)
+            
+            # Crea un PV por cada proveedor con líneas ordenadas
+            for proveedor, lineas in lineas_por_proveedor.items():
                 pv = self.env['rother.pv'].create({
                     'gpv_id': rec.id,
                     'proveedor_id': proveedor.id,
                 })
-                lineas_proveedor = rec.gpv_linea_ids.filtered(
-                    lambda l: (not l.display_type and l.proveedor_id == proveedor) or l.display_type
-                )
-                for linea in lineas_proveedor:
+                for linea in lineas:
                     self.env['rother.pv.linea'].create({
                         'pv_id': pv.id,
                         'product_id': linea.product_id.id if not linea.display_type else False,
                         'nombre': linea.name,
                         'cantidad': linea.cantidad if not linea.display_type else 0,
                         'precio_unitario': linea.precio_unitario if not linea.display_type else 0,
-                        'taxes_id': [(6, 0, linea.taxes_id.ids)] if not linea.display_type else [],
+                        'taxes_id': [(6,0, linea.taxes_id.ids)] if not linea.display_type else [],
                         'importe_total': linea.importe_total if not linea.display_type else 0,
+                        # El nombre del proyecto solo se extrae en líneas de tipo sección
                         'seccion_nombre': linea.project_id.name if linea.display_type == 'line_section' and linea.project_id else '',
                         'display_type': linea.display_type or False,
                     })

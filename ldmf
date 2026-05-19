@@ -1,0 +1,108 @@
+[33mcommit 71a89f0ed7810f2cd951da8fd3f5c39b1e44d751[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mPruebas_Alexis[m[33m, [m[1;31mrothergitlab/Pruebas_Alexis[m[33m)[m
+Author: Alexis Barrera <alexis.barrera@rotherindustrial.es>
+Date:   Mon May 18 17:43:34 2026 +0200
+
+    Mejoras en el módulo de Grupos de Compra. Implementación de funcionalidades del módulo de Compras
+
+[33mcommit 5fda3a3ca6a887e76100286078abc1a7323ab933[m
+Author: Alexis Barrera <alexis.barrera@rotherindustrial.es>
+Date:   Wed May 13 15:22:11 2026 +0200
+
+    Añadidos los submenús para crear Presupuestos y Grupos de Compra
+
+[33mcommit 49de3f8ebc7042b150f5cbbc398948031b2417c2[m
+Author: Alexis Barrera <alexis.barrera@rotherindustrial.es>
+Date:   Wed May 13 09:17:14 2026 +0200
+
+    Mejorado los xml
+
+[33mcommit 467ac8274cb09070a28b502223467e778a981c01[m
+Author: Alexis Barrera <alexis.barrera@rotherindustrial.es>
+Date:   Wed May 13 09:11:42 2026 +0200
+
+    Añadido módulo de pruebas
+
+[33mcommit 0070e8aad971c309fd88d1888a6df21bb8b714fe[m[33m ([m[1;31mrothergitlab/develop[m[33m, [m[1;31morigin/develop[m[33m, [m[1;32mdevelop[m[33m)[m
+Author: Bartolomé Rojas <bartolomerojastoledo@gmail.com>
+Date:   Mon May 11 22:04:26 2026 +0200
+
+    [UPDATE] Cambiado directorio de filestore en archivo de configuración para la restauración de copia de seguridad.
+
+[33mcommit 3ea67069d66c720b950c43e66877b9699677b218[m
+Author: Bartolomé Rojas <bartolomerojastoledo@gmail.com>
+Date:   Mon May 11 22:01:20 2026 +0200
+
+    [ADD] Documentación en README.md
+
+[33mcommit 84be93ba61b5467a423d82049c57b11871db2068[m
+Merge: 1eda4f9 b44d1b2
+Author: Bartolomé Rojas <bartolomerojastoledo@gmail.com>
+Date:   Tue Jan 13 16:40:55 2026 +0100
+
+    Merge branch 'develop' of https://github.com/Studio128k-SL/odoo_obtech into develop
+
+[33mcommit 1eda4f9a91f0a81cb38b92cafc3e5e90162936d6[m
+Author: Bartolomé Rojas <bartolomerojastoledo@gmail.com>
+Date:   Tue Jan 13 16:40:17 2026 +0100
+
+    Agregado módulo para eliminar contenido
+
+[33mcommit b44d1b20d2ed7ff312f2bc47d58a44770fe1041f[m
+Author: Ubuntu <ubuntu@vps-5e0fd1fb.vps.ovh.net>
+Date:   Mon Jan 5 07:48:31 2026 +0000
+
+    Reinicio automático cuando se apague un contenedor
+
+[33mcommit af267e820e489f59dd1848d9177d09a0288e95f9[m
+Author: Bartolomé Rojas <bartolomerojastoledo@gmail.com>
+Date:   Tue Nov 11 18:34:11 2025 +0100
+
+    [ADD] modos de pago en documentos
+
+[33mcommit c78065cea659b9a166494bf9672c2ab555205bc9[m
+Author: Bartolomé Rojas <bartolomerojastoledo@gmail.com>
+Date:   Mon Nov 10 18:25:42 2025 +0100
+
+    Prod conf
+
+[33mcommit 686cecd6bc6a1d2a7a688a88bcba8dac5c02f7db[m
+Author: Bartolomé Rojas <bartolomerojastoledo@gmail.com>
+Date:   Mon Nov 10 18:22:49 2025 +0100
+
+    Prod conf
+
+[33mcommit 3d9d576bcbee56fd6c6289bb0410ca94c3ed0e6a[m
+Author: Bartolomé Rojas <bartolomerojastoledo@gmail.com>
+Date:   Mon Nov 10 18:19:37 2025 +0100
+
+    Prod conf
+
+[33mcommit a44d678e4fb9944adeca8346d1fc6f31d885b436[m
+Author: Bartolomé Rojas <bartolomerojastoledo@gmail.com>
+Date:   Mon Nov 10 18:17:01 2025 +0100
+
+    Prod conf
+
+[33mcommit 11da301360a9c519459aaf90e0d4aed9bf280913[m
+Author: Bartolomé Rojas <bartolomerojastoledo@gmail.com>
+Date:   Mon Nov 10 18:06:31 2025 +0100
+
+    [Add] Añadido módulo de configuración de modo de pago
+
+[33mcommit ac4498b6c47099c5c73c127ef85e60bb9696b64f[m
+Author: Bartolomé <bartolomerojastoledo@gmail.com>
+Date:   Fri Oct 3 20:55:06 2025 +0200
+
+    Production configuration
+
+[33mcommit 07ff8d49fef361633f2a2be041f057020eef016e[m
+Author: Bartolomé <bartolomerojastoledo@gmail.com>
+Date:   Fri Oct 3 20:47:46 2025 +0200
+
+    Production configuration
+
+[33mcommit be1cb6ca0a127c2add93902c762595ddc3fa75b0[m[33m ([m[1;31mrothergitlab/main[m[33m, [m[1;31mrothergitlab/HEAD[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Author: Bartolomé <bartolomerojastoledo@gmail.com>
+Date:   Fri Oct 3 20:39:28 2025 +0200
+
+    first commit
