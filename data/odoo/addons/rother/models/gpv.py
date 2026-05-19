@@ -179,7 +179,7 @@ class RotherPV(models.Model):
     referencia_gpv = fields.Char(string='Referencia GPV', related='gpv_id.name', store=True)
     llegada_prevista = fields.Date(string='Llegada Prevista')
     linea_ids = fields.One2many('rother.pv.linea', 'pv_id', string='Líneas')
-    purchase_order_id = fields.Many2one('purchase.order', string='Pedido de Compra', readonly=True)
+    purchase_order_ids = fields.One2many('purchase.order', 'rother_pv_id', string='Pedidos de Compra', readonly=True)
     state = fields.Selection([
         ('draft', 'Borrador'),
         ('order_created', 'Pedido Creado'),
@@ -193,43 +193,75 @@ class RotherPV(models.Model):
 
     def action_crear_pedido(self):
         for rec in self:
-            if rec.purchase_order_id:
+            if rec.purchase_order_ids:
                 continue
-            order_lines = []
-            for linea in rec.linea_ids:
-                if linea.display_type:
-                    order_lines.append((0, 0, {
-                        'display_type': linea.display_type,
-                        'name': linea.nombre if linea.nombre else '-',
-                        'product_qty': 0,
-                        'price_unit': 0,
-                        'date_planned': rec.llegada_prevista or fields.Date.today(),
-                    }))
+
+            # Ordenar las líneas para procesarlas en orden
+            lineas_ordenadas = rec.linea_ids.sorted('id')
+
+            # Agrupar líneas por proyecto
+            # {project_id: [lineas]}
+            lineas_por_proyecto = {}
+            proyecto_actual = None
+
+            for linea in lineas_ordenadas:
+                if linea.display_type == 'line_section' and linea.seccion_nombre:
+                    #Sección de proyecto: Busca por nombre
+                    proyecto_actual = self.env['project.project'].search(
+                        [('name', '=', linea.seccion_nombre)], limit = 1
+                    )
+                    lineas_por_proyecto.setdefault(proyecto_actual, [])
+                    lineas_por_proyecto[proyecto_actual].append(linea)
                 else:
-                    order_lines.append((0, 0, {
-                        'product_id': linea.product_id.id,
-                        'name': linea.nombre if linea.nombre else linea.product_id.name,
-                        'product_qty': linea.cantidad,
-                        'price_unit': linea.precio_unitario,
-                        'taxes_id': [(6, 0, linea.taxes_id.ids)],
-                        'date_planned': rec.llegada_prevista or fields.Date.today(),
-                        'product_uom': linea.product_id.uom_po_id.id,
-                    }))
-            purchase_order = self.env['purchase.order'].create({
-                'partner_id': rec.proveedor_id.id,
-                'partner_ref': rec.referencia_proveedor,
-                'origin': rec.referencia_gpv,
-                'date_planned': rec.llegada_prevista,
-                'order_line': order_lines,
-            })
-            rec.purchase_order_id = purchase_order.id
-            rec.state = 'order_created'
+                    # Resto de líneas: Van al proyecto actual
+                    if proyecto_actual is not None:
+                        lineas_por_proyecto[proyecto_actual].append(linea)
+                    
+            #Crear una solicitud de presupuesto por proyecto
+            purchase_orders = []
+            for proyecto, lineas in lineas_por_proyecto.items():
+                order_lines = []
+                for linea in lineas:
+                    if linea.display_type: 
+                        order_lines.append((0, 0, {
+                            'display_type': linea.display_type,
+                            'name': linea.nombre if linea.nombre else '-',
+                            'product_qty': 0,
+                            'price_unit': 0,
+                            'date_planned': rec.llegada_prevista or fields.Date.today(),
+                        }))
+                    else:
+                        order_lines.append((0, 0, {
+                            'product_id': linea.product_id.id,
+                            'name': linea.nombre if linea.nombre else linea.product_id.name,
+                            'product_qty': linea.cantidad,
+                            'price_unit': linea.precio_unitario,
+                            'taxes_id': [(6, 0, linea.taxes_id.ids)],
+                            'date_planned': rec.llegada_prevista or fields.Date.today(),
+                            'product_uom': linea.product_id.uom_po_id.id,
+                        }))
+
+                purchase_order = self.env['purchase.order'].create({
+                    'partner_id': rec.proveedor_id.id,
+                    'partner_ref': rec.referencia_proveedor,
+                    'origin': rec.referencia_gpv,
+                    'project_id': proyecto.id if proyecto else False,
+                    'date_planned': rec.llegada_prevista,
+                    'rother_pv_id': rec.id,
+                    'order_line': order_lines,
+                })
+                purchase_orders.append(purchase_order)
+            
+            # Se guarda la primera solicitud en purchase_order_id (referencia principal)
+            # Las demás quedan vinculadas por origin y project_id
+            if purchase_orders:
+                rec.state = 'order_created'
 
     def action_confirmar_pedido(self):
         for rec in self:
-            if rec.purchase_order_id:
-                rec.purchase_order_id.button_confirm()
-                rec.state = 'confirmed'
+            for purchase_order in rec.purchase_order_ids:
+                purchase_order.button_confirm()
+            rec.state = 'confirmed' 
 
 
 class RotherPVLinea(models.Model):

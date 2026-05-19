@@ -100,8 +100,7 @@
                                             </group>
                                             <group>
                                                 <field name="llegada_prevista" string="Llegada Prevista"/>
-                                                <field name="purchase_order_id" string="Pedido de Compra" readonly="1"/>
-                                            </group>
+                                                <field name="purchase_order_ids" string="Pedidos de Compra" readonly="1" widget="many2many_tags"/>                                            </group>
                                         </group>
                                         <field name="linea_ids">
                                             <list editable="bottom"
