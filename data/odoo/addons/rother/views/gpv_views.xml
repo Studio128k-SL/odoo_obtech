@@ -9,7 +9,7 @@
             <list string="Grupos de Compra">
                 <field name="name" string="Número" />
                 <field name="fecha" string="Fecha" />
-                <field name="entregar_a" string="Entregar a"/>
+                <field name="entregar_a_id" string="Entregar a"/>
             </list>
         </field>
     </record>
@@ -21,9 +21,9 @@
         <field name="arch" type="xml">
             <form string="Grupo de Compra">
                 <header>
-                    <button name="action_generar_pv"
-                            string="Generar PV"
-                            type="object"
+                    <button name="%(rother.action_report_gpv)d"
+                            string="Imprimir GPV"
+                            type="action"
                             class="btn-primary"/>
                 </header>
                 <sheet>
@@ -34,7 +34,7 @@
                     </div>
                     <group>
                         <field name="fecha" string="Fecha"/>
-                        <field name="entregar_a" string="Entregar a"/>
+                        <field name="entregar_a_id" string="Entregar a"/>
                         <field name="importe_total" string="Importe Total" readonly="1"/>
                     </group>
                     <notebook>
@@ -52,8 +52,14 @@
                                     <field name="display_type" column_invisible="True"/>
                                     <field name="project_id" string="Proyecto"
                                         invisible="display_type != 'line_section'"/>
-                                    <field name="name" string="Descripción"/>
                                     <field name="product_id" string="Producto"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="name" string="Descripción"/>
+                                    <field name="ref_proveedor_producto" string="Ref. Proveedor"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="ref_fabricante" string="Ref. Fabricante"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="descuento" string="Descuento (%)"
                                         invisible="display_type in ('line_section', 'line_note')"/>
                                     <field name="cantidad" string="Cantidad"
                                         invisible="display_type in ('line_section', 'line_note')"/>
@@ -78,6 +84,10 @@
                                 </list>
                                 <form>
                                     <header>
+                                        <button name="%(rother.action_report_pv)d"
+                                                string="Imprimir PV"
+                                                type="action"
+                                                class="btn-secondary"/>
                                         <button name="action_crear_pedido"
                                                 string="Crear Pedido"
                                                 type="object"
@@ -110,6 +120,10 @@
                                                 <field name="seccion_nombre" string="Proyecto" readonly="1"
                                                     invisible="display_type != 'line_section'"/>
                                                 <field name="nombre" string="Descripción" readonly="1"/>
+                                                <field name="ref_proveedor_producto" string="Ref. Proveedor" readonly="1"
+                                                    invisible="display_type in ('line_section', 'line_note')"/>
+                                                <field name="ref_fabricante" string="Ref. Fabricante" readonly="1"
+                                                    invisible="display_type in ('line_section', 'line_note')"/>
                                                 <field name="product_id" string="Producto" readonly="1"
                                                     invisible="display_type in ('line_section', 'line_note')"/>
                                                 <field name="cantidad" string="Cantidad" readonly="1"
@@ -156,6 +170,10 @@
                             <field name="seccion_nombre" string="Proyecto" readonly="1"/>
                             <field name="product_id" string="Producto" readonly="1"/>
                             <field name="nombre" string="Nombre" readonly="1"/>
+                            <field name="ref_proveedor_producto" string="Ref. Proveedor" readonly="1"
+                                invisible="display_type in ('line_section', 'line_note')"/>
+                            <field name="ref_fabricante" string="Ref. Fabricante" readonly="1"
+                                invisible="display_type in ('line_section', 'line_note')"/>
                             <field name="cantidad" string="Cantidad" readonly="1"/>
                             <field name="precio_unitario" string="Precio Unitario" readonly="1"/>
                             <field name="taxes_id" string="Impuestos" widget="many2many_tags" readonly="1"/>

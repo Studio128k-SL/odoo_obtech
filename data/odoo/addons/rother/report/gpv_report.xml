@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--  Acción de reporte GPV completo -->
+    <record id="action_report_gpv" model="ir.actions.report">
+        <field name="name">Imprimir GPV</field>
+        <field name="model">rother.gpv</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">rother.report_gpv</field>
+        <field name="report_file">rother.report_gpv</field>
+        <field name="print_report_name">'Informe - %s' % object.name</field>
+        <field name="binding_model_id" ref="model_rother_gpv" />
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Acción de reporte PV individual -->
+    <record id="action_report_pv" model="ir.actions.report">
+        <field name="name">Imprimir PV</field>
+        <field name="model">rother.pv</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">rother.report_pv</field>    
+        <field name="report_file">rother.report_pv</field>    
+        <field name="print_report_name">'%s - %s' % (object.referencia_gpv, object.proveedor_id.name)</field>
+        <field name="binding_model_id" ref="model_rother_pv" />
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Plantilla GPV completa -->
+    <template id="report_gpv">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="gpv">
+                <t t-foreach="gpv.pv_ids" t-as="pv">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <style>
+                                .rother-header { margin-bottom: 24px; }
+                                .rother-header h2 { color: #2c3e50; font-size: 22px; margin-bottom: 6px; }
+                                .rother-header h3 { color: #555; font-size: 17px; margin-bottom: 6px; }
+                                .rother-header p { color: #777; font-size: 14px; margin: 4px 0; }
+                                .rother-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+                                .rother-table thead tr { background-color: #2c3e50; color: white; }
+                                .rother-table thead th { padding: 12px 14px; text-align: left; font-weight: 600; }
+                                .rother-table thead th.text-right { text-align: right; }
+                                .rother-table tbody tr:nth-child(even) { background-color: #f9f9f9; }
+                                .rother-table tbody td { padding: 10px 14px; border-bottom: 1px solid #e0e0e0; }
+                                .rother-table tbody td.text-right { text-align: right; }
+                                .rother-table tfoot tr { background-color: #ecf0f1; }
+                                .rother-table tfoot td { padding: 12px 14px; font-weight: bold; font-size: 15px; border-top: 2px solid #2c3e50; }
+                                .rother-table tfoot td.text-right { text-align: right; }
+                            </style>
+
+                            <div class="page">
+                                <div class="row mb-4">
+                                    <div class="col-3">
+                                        <t t-if="res_company.logo">
+                                            <img t-att-src="image_data_uri(res_company.logo)"
+                                                style="max-height: 80px; max-width: 200px;"/>
+                                        </t>
+                                    </div>
+
+                                    <div class="col-9"> 
+                                        <div class="rother-header">
+                                            <h2>Grupo de Compra: <span t-field="gpv.name"/></h2>
+                                            <h3>Proveedor: <span t-field="pv.proveedor_id.name"/></h3>
+                                            <t t-if="pv.referencia_proveedor">
+                                                <p>Referencia Proveedor: <span t-field="pv.referencia_proveedor"/></p>
+                                            </t>
+                                            <t t-if="pv.llegada_prevista">
+                                                <p>Llegada Prevista: <span t-field="pv.llegada_prevista"/></p>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+
+                            <table class="rother-table">
+                                <thead>
+                                    <tr>
+                                        <th>Referencia</th>
+                                        <th>Producto</th>
+                                        <th class="text-right">Cantidad</th>
+                                        <th class="text-right">Precio Unit.</th>
+                                        <th class="text-right">Descuento (%)</th>
+                                        <th>Impuestos</th>
+                                        <th class="text-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="pv.linea_ids" t-as="linea">
+                                        <t t-if="not linea.display_type">
+                                            <tr>
+                                                <td><span t-esc="linea.product_id.default_code or ''"/></td>
+                                                <td><span t-esc="linea.nombre or linea.product_id.name"/></td>
+                                                <td class="text-right"><span t-esc="linea.cantidad"/></td>
+                                                <td class="text-right"><span t-esc="linea.precio_unitario"/></td>
+                                                <td class="text-right"><span t-esc="linea.descuento"/></td>
+                                                <td><span t-esc="', '.join(linea.taxes_id.mapped('name'))"/></td>
+                                                <td class="text-right"><span t-esc="linea.importe_total"/></td>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="6" class="text-right">Total:</td>
+                                        <td class="text-right">
+                                            <span t-esc="sum(l.importe_total for l in pv.linea_ids if not l.display_type)"/>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- Plantilla PV individual -->
+    <template id="report_pv">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="pv">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <style>
+                            .rother-header { margin-bottom: 24px; }
+                            .rother-header h2 { color: #2c3e50; font-size: 22px; margin-bottom: 6px; }
+                            .rother-header h3 { color: #555; font-size: 17px; margin-bottom: 6px; }
+                            .rother-header p { color: #777; font-size: 14px; margin: 4px 0; }
+                            .rother-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+                            .rother-table thead tr { background-color: #2c3e50; color: white; }
+                            .rother-table thead th { padding: 12px 14px; text-align: left; font-weight: 600; }
+                            .rother-table thead th.text-right { text-align: right; }
+                            .rother-table tbody tr:nth-child(even) { background-color: #f9f9f9; }
+                            .rother-table tbody td { padding: 10px 14px; border-bottom: 1px solid #e0e0e0; }
+                            .rother-table tbody td.text-right { text-align: right; }
+                            .rother-table tfoot tr { background-color: #ecf0f1; }
+                            .rother-table tfoot td { padding: 12px 14px; font-weight: bold; font-size: 15px; border-top: 2px solid #2c3e50; }
+                            .rother-table tfoot td.text-right { text-align: right; }
+                        </style>
+
+                        <div class="page">
+                                <div class="row mb-4">
+                                    <div class="col-3">
+                                        <t t-if="res_company.logo">
+                                            <img t-att-src="image_data_uri(res_company.logo)"
+                                                style="max-height: 80px; max-width: 200px;"/>
+                                        </t>
+                                    </div>
+
+                                    <div class="col-9"> 
+                                        <div class="rother-header">
+                                            <h2>Pedido Virtual: <span t-field="pv.referencia_gpv"/></h2>
+                                            <h3>Proveedor: <span t-field="pv.proveedor_id.name"/></h3>
+                                            <t t-if="pv.referencia_proveedor">
+                                                <p>Referencia Proveedor: <span t-field="pv.referencia_proveedor"/></p>
+                                            </t>
+                                            <t t-if="pv.llegada_prevista">
+                                                <p>Llegada Prevista: <span t-field="pv.llegada_prevista"/></p>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        <table class="rother-table">
+                            <thead>
+                                <tr>
+                                    <th>Referencia</th>
+                                    <th>Producto</th>
+                                    <th class="text-right">Cantidad</th>
+                                    <th class="text-right">Precio Unit.</th>
+                                    <th class="text-right">Descuento (%)</th>
+                                    <th>Impuestos</th>
+                                    <th class="text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="pv.linea_ids" t-as="linea">
+                                    <t t-if="not linea.display_type">
+                                        <tr>
+                                            <td><span t-esc="linea.product_id.default_code or ''"/></td>
+                                            <td><span t-esc="linea.nombre or linea.product_id.name"/></td>
+                                            <td class="text-right"><span t-esc="linea.cantidad"/></td>
+                                            <td class="text-right"><span t-esc="linea.precio_unitario"/></td>
+                                            <td class="text-right"><span t-esc="linea.descuento"/></td>
+                                            <td><span t-esc="', '.join(linea.taxes_id.mapped('name'))"/></td>
+                                            <td class="text-right"><span t-esc="linea.importe_total"/></td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="6" class="text-right">Total:</td>
+                                    <td class="text-right">
+                                        <span t-esc="sum(l.importe_total for l in pv.linea_ids if not l.display_type)"/>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

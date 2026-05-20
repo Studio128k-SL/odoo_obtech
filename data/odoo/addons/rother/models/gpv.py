@@ -6,7 +6,7 @@ class RotherGPV(models.Model):
 
     name = fields.Char(string='Número', readonly=True, default='Nuevo')
     fecha = fields.Date(string='Fecha', default=fields.Date.today)
-    entregar_a = fields.Char(string='Entregar a')
+    entregar_a_id = fields.Many2one('res.partner', string='Entregar a')
     gpv_linea_ids = fields.One2many('rother.gpv.linea2', 'gpv_id', string='Líneas')
     pv_ids = fields.One2many('rother.pv', 'gpv_id', string='Pedidos Virtuales')
     importe_total = fields.Float(string='Importe Total', compute='_compute_importe_total', store=True)
@@ -16,7 +16,10 @@ class RotherGPV(models.Model):
         for vals in vals_list:
             if vals.get('name', 'Nuevo') == 'Nuevo':
                 vals['name'] = self.env['ir.sequence'].next_by_code('rother.gpv') or 'Nuevo'
-        return super().create(vals_list)
+        records = super().create(vals_list)
+        for rec in records:
+            rec.action_generar_pv()
+        return records
 
     @api.depends('gpv_linea_ids.importe_total')
     def _compute_importe_total(self):
@@ -27,6 +30,10 @@ class RotherGPV(models.Model):
 
     def action_generar_pv(self):
         for rec in self:
+            # Se borran todos los pedidos asociados a los PV antes de eliminar estos
+            for pv in rec.pv_ids:
+                pv.purchase_order_ids.unlink()
+
             rec.pv_ids.unlink()
 
             lineas_ordenadas = rec.gpv_linea_ids.sorted('sequence')
@@ -104,14 +111,28 @@ class RotherGPV(models.Model):
                         'pv_id': pv.id,
                         'product_id': linea.product_id.id if not linea.display_type else False,
                         'nombre': linea.name,
+                        'ref_fabricante': linea.ref_fabricante if not linea.display_type else '',
+                        'ref_proveedor_producto': linea.ref_proveedor_producto if not linea.display_type else '',
                         'cantidad': linea.cantidad if not linea.display_type else 0,
                         'precio_unitario': linea.precio_unitario if not linea.display_type else 0,
                         'taxes_id': [(6, 0, linea.taxes_id.ids)] if not linea.display_type else [],
+                        'descuento': linea.descuento if not linea.display_type else 0,
                         'importe_total': linea.importe_total if not linea.display_type else 0,
                         'seccion_nombre': linea.project_id.name if linea.display_type == 'line_section' and linea.project_id else '',
                         'display_type': linea.display_type or False,
                     })
-
+    
+    def write(self, vals):
+        import logging
+        _logger = logging.getLogger(__name__)
+        _logger.info("GPV write llamado con vals: %s", list(vals.keys()))
+        result = super().write(vals)
+        if 'gpv_linea_ids' in vals:
+            _logger.info("Regenerando PVs...")
+            for rec in self:
+                rec.action_generar_pv()
+        return result
+    
 
 class RotherGPVLinea2(models.Model):
     _name = 'rother.gpv.linea2'
@@ -126,9 +147,12 @@ class RotherGPVLinea2(models.Model):
     name = fields.Char(string='Nombre')
     project_id = fields.Many2one('project.project', string='Proyecto')
     product_id = fields.Many2one('product.product', string='Producto')
+    ref_fabricante = fields.Char(string='Ref. Fabricante', compute='_compute_ref_fabricante', store=True)
+    ref_proveedor_producto = fields.Char(string = 'Ref. Proveedor')
     cantidad = fields.Float(string='Cantidad', default=1.0)
     precio_unitario = fields.Float(string='Precio Unitario')
     taxes_id = fields.Many2many('account.tax', string='Impuestos')
+    descuento = fields.Float(string='Descuento (%)', default = 0.0)
     importe_total = fields.Float(string='Importe Total', compute='_compute_importe_total', store=True)
     proveedor_id = fields.Many2one('res.partner', string='Proveedor')
 
@@ -138,19 +162,36 @@ class RotherGPVLinea2(models.Model):
             if rec.display_type:
                 rec.importe_total = 0.0
             else:
-                subtotal = rec.cantidad * rec.precio_unitario
+                subtotal = rec.cantidad * rec.precio_unitario * (1 - rec.descuento/100)
                 if rec.taxes_id:
                     taxes = rec.taxes_id.compute_all(subtotal)
                     rec.importe_total = taxes['total_included']
                 else:
                     rec.importe_total = subtotal
 
-    @api.onchange('product_id')
+    @api.onchange('product_id', 'proveedor_id')
     def _onchange_product_id(self):
         if self.product_id:
-            self.name = self.product_id.name
+            # Estos siempre se rellenan independientemente del proveedor
             self.precio_unitario = self.product_id.lst_price
             self.taxes_id = self.product_id.taxes_id
+            self.ref_fabricante = self.product_id.x_Ref_fab
+            self.name = self.product_id.name
+
+            # Buscar referencia del proveedor seleccionado
+            supplier_info = self.product_id.seller_ids.filtered(
+                lambda s: s.partner_id == self.proveedor_id
+            )[:1]
+
+            if supplier_info:
+                self.ref_proveedor_producto = supplier_info.product_code or ''
+            else:
+                self.ref_proveedor_producto = ''
+    
+    @api.depends('product_id')
+    def _compute_ref_fabricante(self):
+        for rec in self:
+            rec.ref_fabricante = rec.product_id.x_Ref_fab if rec.product_id else ''
 
 
 class RotherGPVLinea(models.Model):
@@ -272,9 +313,12 @@ class RotherPVLinea(models.Model):
     gpv_linea_id = fields.Many2one('rother.gpv.linea', string='Línea GPV')
     product_id = fields.Many2one('product.product', string='Producto')
     nombre = fields.Char(string='Nombre')
+    ref_fabricante = fields.Char(string='Ref. Fabricante')
+    ref_proveedor_producto = fields.Char(string='Ref. Proveedor')
     cantidad = fields.Float(string='Cantidad')
     precio_unitario = fields.Float(string='Precio Unitario')
     taxes_id = fields.Many2many('account.tax', string='Impuestos')
+    descuento = fields.Float(string='Descuento (%)', default= 0.0)
     importe_total = fields.Float(string='Importe Total')
     seccion_nombre = fields.Char(string='Proyecto')
     display_type = fields.Selection([
