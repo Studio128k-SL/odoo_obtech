@@ -19,12 +19,16 @@
         <field name="name">rother.gpv.form</field>
         <field name="model">rother.gpv</field>
         <field name="arch" type="xml">
-            <form string="Grupo de Compra">
+            <form string="Grupo de Compra" class="o_form_fullwidth">
                 <header>
                     <button name="%(rother.action_report_gpv)d"
                             string="Imprimir GPV"
                             type="action"
                             class="btn-primary"/>
+                    <button name="action_add_from_catalog"
+                            string="Catálogo"
+                            type="object"
+                            class="btn-secondary"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -52,9 +56,12 @@
                                     <field name="display_type" column_invisible="True"/>
                                     <field name="project_id" string="Proyecto"
                                         invisible="display_type != 'line_section'"/>
+                                    <field name="name" string="Información"
+                                        invisible="display_type not in ('line_section', 'line_note')"/>
                                     <field name="product_id" string="Producto"
                                         invisible="display_type in ('line_section', 'line_note')"/>
-                                    <field name="name" string="Descripción"/>
+                                    <field name="name" string="Descripción"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
                                     <field name="ref_proveedor_producto" string="Ref. Proveedor"
                                         invisible="display_type in ('line_section', 'line_note')"/>
                                     <field name="ref_fabricante" string="Ref. Fabricante"
@@ -63,11 +70,14 @@
                                         invisible="display_type in ('line_section', 'line_note')"/>
                                     <field name="cantidad" string="Cantidad"
                                         invisible="display_type in ('line_section', 'line_note')"/>
-                                    <field name="precio_unitario" string="Precio Unitario"
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="precio_unitario" string="P. Unitario" widget="monetary"
+                                        options="{'currency_field': 'currency_id'}"
                                         invisible="display_type in ('line_section', 'line_note')"/>
-                                    <field name="taxes_id" string="Impuestos" widget="many2many_tags"
+                                    <field name="taxes_id" string="Impuestos" widget="many2many_tags" readonly="1"
                                         invisible="display_type in ('line_section', 'line_note')"/>
-                                    <field name="importe_total" string="Importe Total" readonly="1"
+                                    <field name="importe_total" string="Total" widget="monetary" readonly="1"
+                                        options="{'currency_field': 'currency_id'}"
                                         invisible="display_type in ('line_section', 'line_note')"/>
                                     <field name="proveedor_id" string="Proveedor"
                                         invisible="display_type in ('line_section', 'line_note')"/>
@@ -98,8 +108,13 @@
                                                 type="object"
                                                 class="btn-primary"
                                                 invisible="state != 'order_created'"/>
+                                        <button name="action_ver_recepciones"
+                                                string="Recepciones"
+                                                type="object"
+                                                class="btn-secondary"
+                                                invisible="state != 'confirmed'"/>
                                         <field name="state" widget="statusbar"
-                                            statusbar_visible="draft,order_created,confirmed"/>
+                                            statusbar_visible="draft,order_created,confirmed, picking"/>
                                     </header>
                                     <sheet>
                                         <group>
@@ -117,23 +132,26 @@
                                                 decoration-bf="display_type == 'line_section'"
                                                 decoration-it="display_type == 'line_note'">
                                                 <field name="display_type" column_invisible="True"/>
-                                                <field name="seccion_nombre" string="Proyecto" readonly="1"
-                                                    invisible="display_type != 'line_section'"/>
-                                                <field name="nombre" string="Descripción" readonly="1"/>
-                                                <field name="ref_proveedor_producto" string="Ref. Proveedor" readonly="1"
-                                                    invisible="display_type in ('line_section', 'line_note')"/>
-                                                <field name="ref_fabricante" string="Ref. Fabricante" readonly="1"
-                                                    invisible="display_type in ('line_section', 'line_note')"/>
-                                                <field name="product_id" string="Producto" readonly="1"
-                                                    invisible="display_type in ('line_section', 'line_note')"/>
-                                                <field name="cantidad" string="Cantidad" readonly="1"
-                                                    invisible="display_type in ('line_section', 'line_note')"/>
-                                                <field name="precio_unitario" string="Precio Unitario" readonly="1"
-                                                    invisible="display_type in ('line_section', 'line_note')"/>
-                                                <field name="taxes_id" string="Impuestos" widget="many2many_tags" readonly="1"
-                                                    invisible="display_type in ('line_section', 'line_note')"/>
-                                                <field name="importe_total" string="Importe Total" readonly="1"
-                                                    invisible="display_type in ('line_section', 'line_note')"/>
+                                            <field name="seccion_nombre" string="Proyecto" readonly="1"
+                                                invisible="display_type != 'line_section'"/>
+                                            <field name="nombre" string="Producto/Información" readonly="1"/>
+                                            <field name="product_id" string="Ref. Producto" readonly="1"
+                                                invisible="display_type in ('line_section', 'line_note')"/>
+                                            <field name="ref_proveedor_producto" string="Ref. Proveedor" readonly="1"
+                                                invisible="display_type in ('line_section', 'line_note')"/>
+                                            <field name="ref_fabricante" string="Ref. Fabricante" readonly="1"
+                                                invisible="display_type in ('line_section', 'line_note')"/>
+                                            <field name="cantidad" string="Cantidad" readonly="1"
+                                                invisible="display_type in ('line_section', 'line_note')"/>
+                                            <field name="currency_id" column_invisible="True"/>
+                                            <field name="precio_unitario" string="P. Unitario" widget="monetary"
+                                                options="{'currency_field': 'currency_id'}"
+                                                invisible="display_type in ('line_section', 'line_note')"/>
+                                            <field name="taxes_id" string="Impuestos" widget="many2many_tags" readonly="1"
+                                                invisible="display_type in ('line_section', 'line_note')"/>
+                                            <field name="importe_total" string="Total" widget="monetary" readonly="1"
+                                                options="{'currency_field': 'currency_id'}"
+                                                invisible="display_type in ('line_section', 'line_note')"/>
                                             </list>
                                         </field>
                                     </sheet>
@@ -167,17 +185,24 @@
                     </group>
                     <field name="linea_ids">
                         <list editable="bottom">
-                            <field name="seccion_nombre" string="Proyecto" readonly="1"/>
-                            <field name="product_id" string="Producto" readonly="1"/>
-                            <field name="nombre" string="Nombre" readonly="1"/>
+                            <field name="display_type" column_invisible="True"/>
+                            <field name="seccion_nombre" string="Proyecto" readonly="1"
+                                invisible="display_type != 'line_section'"/>
+                            <field name="nombre" string="Producto/Descripción" readonly="1"/>
+                            <field name="product_id" string="Ref. Producto" readonly="1"
+                                invisible="display_type in ('line_section', 'line_note')"/>
                             <field name="ref_proveedor_producto" string="Ref. Proveedor" readonly="1"
                                 invisible="display_type in ('line_section', 'line_note')"/>
                             <field name="ref_fabricante" string="Ref. Fabricante" readonly="1"
                                 invisible="display_type in ('line_section', 'line_note')"/>
-                            <field name="cantidad" string="Cantidad" readonly="1"/>
-                            <field name="precio_unitario" string="Precio Unitario" readonly="1"/>
-                            <field name="taxes_id" string="Impuestos" widget="many2many_tags" readonly="1"/>
-                            <field name="importe_total" string="Importe Total" readonly="1"/>
+                            <field name="cantidad" string="Cantidad" readonly="1"
+                                invisible="display_type in ('line_section', 'line_note')"/>
+                            <field name="precio_unitario" string="P. Unitario" readonly="1"
+                                invisible="display_type in ('line_section', 'line_note')"/>
+                            <field name="taxes_id" string="Impuestos" widget="many2many_tags" readonly="1"
+                                invisible="display_type in ('line_section', 'line_note')"/>
+                            <field name="importe_total" string="Total" readonly="1"
+                                invisible="display_type in ('line_section', 'line_note')"/>
                         </list>
                     </field>
                 </sheet>

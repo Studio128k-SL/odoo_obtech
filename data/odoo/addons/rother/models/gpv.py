@@ -3,6 +3,7 @@ from odoo import models, fields, api
 class RotherGPV(models.Model):
     _name = 'rother.gpv'
     _description = 'Grupo de Compra Rother'
+    _inherit=['product.catalog.mixin']
 
     name = fields.Char(string='Número', readonly=True, default='Nuevo')
     fecha = fields.Date(string='Fecha', default=fields.Date.today)
@@ -10,7 +11,12 @@ class RotherGPV(models.Model):
     gpv_linea_ids = fields.One2many('rother.gpv.linea2', 'gpv_id', string='Líneas')
     pv_ids = fields.One2many('rother.pv', 'gpv_id', string='Pedidos Virtuales')
     importe_total = fields.Float(string='Importe Total', compute='_compute_importe_total', store=True)
-
+    company_id = fields.Many2one('res.company', string='Empresa', default=lambda self: self.env.company)
+    state = fields.Selection([
+        ('draft', 'Borrador'),
+        ('done', 'Hecho'),
+    ], string='Estado', default='draft')
+        
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -121,6 +127,42 @@ class RotherGPV(models.Model):
                         'seccion_nombre': linea.project_id.name if linea.display_type == 'line_section' and linea.project_id else '',
                         'display_type': linea.display_type or False,
                     })
+
+    def action_open_product_catalog(self):
+        return{
+            'type': 'ir.actions.act_window',
+            'name': 'Catálogo de Productos',
+            'res_model': 'product.product',
+            'view_mode': 'kanban,list,form',
+            'target': 'new',
+        }
+
+    def _get_action_add_from_catalog_extra_context(self):
+        return {
+            'order_id': self.id,
+            'product_catalog_order_id': self.id,
+            'product_catalog_order_model': self._name,
+        }
+
+    def _update_order_line_info(self, product_id, quantity, **kwargs):
+        line = self.gpv_linea_ids.filtered(lambda l: l.product_id.id == product_id)
+        product = self.env['product.product'].browse(product_id)
+        if line:
+            if quantity == 0:
+                line.unlink()
+            else:
+                line.cantidad = quantity
+        elif quantity > 0:
+            self.env['rother.gpv.linea2'].create({
+                'gpv_id': self.id,
+                'product_id': product_id,
+                'name': product.name,
+                'cantidad': quantity,
+                'precio_unitario': product.lst_price,
+                'taxes_id': [(6, 0, product.taxes_id.ids)],
+                'ref_fabricante': product.x_Ref_fab or '',
+            })
+        return product.lst_price    
     
     def write(self, vals):
         import logging
@@ -155,6 +197,7 @@ class RotherGPVLinea2(models.Model):
     descuento = fields.Float(string='Descuento (%)', default = 0.0)
     importe_total = fields.Float(string='Importe Total', compute='_compute_importe_total', store=True)
     proveedor_id = fields.Many2one('res.partner', string='Proveedor')
+    currency_id = fields.Many2one('res.currency', string='Moneda', related='gpv_id.company_id.currency_id', store=True)
 
     @api.depends('cantidad', 'precio_unitario', 'taxes_id', 'display_type')
     def _compute_importe_total(self):
@@ -226,11 +269,33 @@ class RotherPV(models.Model):
         ('order_created', 'Pedido Creado'),
         ('confirmed', 'Confirmado'),
     ], string='Estado', default='draft', readonly=True)
+    recepcion_count = fields.Integer(
+        string='Recepciones',
+        compute='_compute_reception_count'
+    )
 
     @api.onchange('proveedor_id')
     def _onchange_proveedor_id(self):
         if self.proveedor_id:
             self.referencia_proveedor = self.proveedor_id.ref
+
+    @api.depends('purchase_order_ids')
+    def _compute_reception_count(self):
+        for rec in self:
+            pickings = rec.purchase_order_ids.mapped('picking_ids')
+            rec.reception_count = len(pickings)
+
+    def action_ver_recepciones(self):
+        pickings = self.purchase_order_ids.mapped('picking_ids')
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Recepciones',
+            'res_model': 'stock.picking',
+            'view_mode': 'list,form',
+            'domain': [('id', 'in', pickings.ids)],
+            'context': {'list_view_ref': 'rother.rother_stock_picking_list_view'},
+        }
+
 
     def action_crear_pedido(self):
         for rec in self:
@@ -325,3 +390,4 @@ class RotherPVLinea(models.Model):
         ('line_section', 'Sección'),
         ('line_note', 'Nota'),
     ], default = False)
+    currency_id = fields.Many2one('res.currency', string='Moneda', related='pv_id.gpv_id.company_id.currency_id', store=True)

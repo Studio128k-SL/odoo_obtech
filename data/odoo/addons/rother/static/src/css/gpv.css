@@ -1,0 +1,25 @@
+.o_form_sheet_bg {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+.o_form_sheet {
+    max-width: 100% !important;
+    width: 100% !important;
+    box-shadow: none !important;
+}
+
+.o_form_view_container .o_content {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.o_form_renderer {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.o_dialog .modal-dialog {
+    max-width: 90vw !important;
+    width: 90vw !important;
+}

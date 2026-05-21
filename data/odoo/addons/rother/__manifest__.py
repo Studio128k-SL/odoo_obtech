@@ -16,7 +16,14 @@
         'views/product_views.xml',
         'views/presupuesto_views.xml',
         'views/gpv_views.xml',
+        'views/stock_views.xml',
+        'views/servicio_externo_views.xml'
     ],
+    'assets': {
+        'web.assets_backend': [
+            'rother/static/src/css/gpv.css',
+        ],
+    },
     'installable': True,
     'application': True,
 }
