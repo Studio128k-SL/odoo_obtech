@@ -9,6 +9,7 @@
     'data': [
         'security/ir.model.access.csv',
         'data/sequences.xml',
+        'data/cron_servicio_externo.xml',
         'report/report.xml',
         'report/report_template.xml',
         'report/report_label_dymo.xml',

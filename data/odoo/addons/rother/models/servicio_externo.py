@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from markupsafe import Markup
 
 class RotherServicioExterno(models.Model):
     _name = 'rother.servicio.externo'
@@ -32,6 +33,34 @@ class RotherServicioExterno(models.Model):
     def _compute_precio_total(self):
         for rec in self:
             rec.precio_total = rec.precio + sum(rec.extra_ids.mapped('precio'))
+    
+    @api.model
+    def _cron_alerta_fecha_finalizacion(self):
+        hoy = fields.Date.today()
+        fecha_1_mes = fields.Date.add(hoy, months = 1)
+        fecha_15_dias = fields.Date.add(hoy, days = 15)
+        fecha_7_dias = fields.Date.add(hoy, days = 7)
+        fecha_1_dia = fields.Date.add(hoy, days = 1)
+
+        servicios = self.search([
+            ('fecha_finalizacion', 'in', [fecha_1_mes, fecha_15_dias, fecha_7_dias, fecha_1_dia])
+        ])
+
+        for servicio in servicios:
+            dias = (servicio.fecha_finalizacion - hoy).days
+            mensaje = Markup("⚠️ El servicio <b>%s</b> finaliza en <b>%s días</b> (%s).") % (servicio.name, dias, servicio.fecha_finalizacion)
+            servicio.message_post(
+                body = mensaje,
+                subject = f"Aviso: {servicio.name} próximo a finalización",
+                subtype_xmlid="mail.mt_comment",
+                partner_ids = servicio._get_usuarios_notificar(),
+            )
+    
+    def _get_usuarios_notificar(self):
+        usuarios = self.env['res.users'].search([
+            ('share', '=', False),
+        ])
+        return usuarios.mapped('partner_id').ids
 
 class RotherServicioExternoLinea(models.Model):
     _name= 'rother.servicio.externo.linea'
