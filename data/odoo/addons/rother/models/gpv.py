@@ -38,8 +38,13 @@ class RotherGPV(models.Model):
         for rec in self:
             # Se borran todos los pedidos asociados a los PV antes de eliminar estos
             for pv in rec.pv_ids:
+                for po in pv.purchase_order_ids:
+                    for picking in po.picking_ids:
+                        if picking.state not in ('done', 'cancel'):
+                            picking.action_cancel()
+                    if po.state not in ('cancel',):
+                        po.button_cancel()
                 pv.purchase_order_ids.unlink()
-
             rec.pv_ids.unlink()
 
             lineas_ordenadas = rec.gpv_linea_ids.sorted('sequence')
@@ -174,6 +179,20 @@ class RotherGPV(models.Model):
             for rec in self:
                 rec.action_generar_pv()
         return result
+    
+    def unlink(self):
+        for rec in self:
+            for pv in rec.pv_ids:
+                for po in pv.purchase_order_ids:
+                    # Cancelar recepciones asociadas
+                    for recepcion in po.picking_ids:
+                        if recepcion.state not in ('done', 'cancel'):
+                            recepcion.action_cancel()
+                    # Cancelar el pedido si está confirmado
+                    if po.state not in ('cancel',):
+                        po.button_cancel()
+                pv.purchase_order_ids.unlink()
+        return super().unlink()
     
 
 class RotherGPVLinea2(models.Model):

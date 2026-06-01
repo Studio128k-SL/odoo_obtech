@@ -74,12 +74,12 @@
                                     <field name="precio_unitario" string="P. Unitario" widget="monetary"
                                         options="{'currency_field': 'currency_id'}"
                                         invisible="display_type in ('line_section', 'line_note')"/>
-                                    <field name="taxes_id" string="Impuestos" widget="many2many_tags" readonly="1"
+                                    <field name="taxes_id" string="Impuestos" widget="many2many_tags" 
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="proveedor_id" string="Proveedor"
                                         invisible="display_type in ('line_section', 'line_note')"/>
                                     <field name="importe_total" string="Total" widget="monetary" readonly="1"
                                         options="{'currency_field': 'currency_id'}"
-                                        invisible="display_type in ('line_section', 'line_note')"/>
-                                    <field name="proveedor_id" string="Proveedor"
                                         invisible="display_type in ('line_section', 'line_note')"/>
                                 </list>
                             </field>
@@ -147,7 +147,7 @@
                                             <field name="precio_unitario" string="P. Unitario" widget="monetary"
                                                 options="{'currency_field': 'currency_id'}"
                                                 invisible="display_type in ('line_section', 'line_note')"/>
-                                            <field name="taxes_id" string="Impuestos" widget="many2many_tags" readonly="1"
+                                            <field name="taxes_id" string="Impuestos" widget="many2many_tags"
                                                 invisible="display_type in ('line_section', 'line_note')"/>
                                             <field name="importe_total" string="Total" widget="monetary" readonly="1"
                                                 options="{'currency_field': 'currency_id'}"
