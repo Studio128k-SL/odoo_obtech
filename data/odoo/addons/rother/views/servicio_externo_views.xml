@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vista Kanban (cuadrícula) -->
+    <record id="rother_servicio_externo_kanban_view" model="ir.ui.view">
+        <field name="name">rother.servicio.externo.kanban</field>
+        <field name="model">rother.servicio.externo</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_image">
+                            <field name="imagen" widget="image" options="{'size': [150, 150]}"/>
+                        </div>
+                        <div>
+                            <strong><field name="name"/></strong>
+                            <div>
+                                <field name="precio" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            </div>
+                            <div class="text-muted">
+                                <field name="fecha_finalizacion"/>
+                            </div>
+                            <div class="text-muted" t-if="record.periodo_display.raw_value">
+                                <field name="periodo_display"/>
+                            </div>
+                            <field name="currency_id" invisible="1"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>           
+        </field>
+    </record>
+
+    <!-- Vista Lista -->
+    <record id="rother_servicio_externo_tree_view" model="ir.ui.view">
+        <field name="name">rother.servicio.externo.tree</field>
+        <field name="model">rother.servicio.externo</field>
+        <field name="arch" type="xml">
+            <list string="Servicios Externos">
+                <field name="name" string="Nombre"/>
+                <field name="proveedor_id" string="Proveedor"/>
+                <field name="precio" string="Precio" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="fecha_inicio" string="Fecha de Inicio"/>
+                <field name="fecha_finalizacion" string="Fecha Finalización"/>
+                <field name="precio_total" string="Precio Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="currency_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista Formulario -->
+    <record id="rother_servicio_externo_form_view" model="ir.ui.view">
+        <field name="name">rother.servicio.externo.form</field>
+        <field name="model">rother.servicio.externo</field>
+        <field name="arch" type="xml">
+            <form string="Servicio Externo">
+                <header>
+                    <button string="Guardar" type="object" name="action_guardar"
+                        class="btn-success" icon="fa-save"/>
+                    <button name="action_renovar" type="object"
+                        string="Renovar Servicio" class="btn-primary" icon="fa-refresh"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-info" role="alert" style="margin-bottom:16px;">
+                        <p><b>FUNCIONAMIENTO</b></p>
+                        <ul>
+                            <li>Introduce la <b>Fecha de Inicio</b> y el <b>Periodo de Renovación</b> (años, meses y/o días).
+                                La fecha de finalización se calculará automáticamente.</li>
+                            <li>Puedes combinar los tres campos: por ejemplo, 1 año, 3 meses y 10 días.</li>
+                            <li>Pulsa <b>«Guardar»</b> para que se guarden los cambios solamente. </li>
+                            <li>Pulsa <b>«Renovar Servicio»</b> para extender la suscripción otro periodo completo
+                                a partir de la fecha de finalización actual.</li>
+                            <li>Los <b>Servicios Extra</b> se suman al precio base para obtener el precio total.</li>
+                        </ul>
+                    </div>
+
+                    <field name="imagen" widget="image" class="oe_avatar" options="{'size': [128, 128]}"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre del servicio"/>
+                        </h1>
+                    </div>
+
+                    <notebook>
+                        <page string="Información General" name="info_general">
+                            <group>
+                                <group>
+                                    <field name="proveedor_id" string="Proveedor"/>
+                                    <field name="precio" string="Precio"
+                                        widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="taxes_id" string="Impuestos" widget="many2many_tags"/>
+                                </group>
+                                <group>
+                                    <field name="fecha_inicio" string="Fecha de Inicio"/>
+                                    <label for="periodo_anios" string="Periodo de Renovación"/>
+                                    <div class="o_row">
+                                        <field name="periodo_anios" class="oe_inline" style="max-width:50px;"/>
+                                        <span class="text-muted">año(s)</span>
+                                        <field name="periodo_meses" class="oe_inline" style="max-width:50px;"/>
+                                        <span class="text-muted">mes(es)</span>
+                                        <field name="periodo_dias" class="oe_inline" style="max-width:50px;"/>
+                                        <span class="text-muted">día(s)</span>
+                                    </div>
+                                    <field name="fecha_finalizacion" string="Fecha de Finalización"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </group>
+                            </group>
+                            <separator string="Descripción"/>
+                            <field name="descripcion" placeholder="Descripción del servicio..."/>
+                        </page>
+                        <page string="Servicios Extra" name="servicios_extra">
+                            <field name="extra_ids">
+                                <list editable="bottom" string="Servicios Extra">
+                                    <field name="name" string="Nombre"/>
+                                    <field name="precio" string="Precio"/>
+                                    <field name="fecha_finalizacion" string="Fecha Finalización"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="precio_total" string="Precio Total (Base + Extras)"
+                                    widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="rother_servicio_externo_search_view" model="ir.ui.view">
+        <field name="name">rother.servicio.externo.search</field>
+        <field name="model">rother.servicio.externo</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Servicios">
+                <field name="name"/>
+                <field name="proveedor_id"/>
+                <filter name="group_proveedor" string="Proveedor" context="{'group_by': 'proveedor_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción -->
+    <record id="rother_servicio_externo_action" model="ir.actions.act_window">
+        <field name="name">Servicios Externos</field>
+        <field name="res_model">rother.servicio.externo</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="rother_servicio_externo_search_view"/>
+        <field name="context">{'search_default_group_proveedor': 1}</field>
+    </record>
+
+    <!-- Menú -->
+    <menuitem id="rother_menu_servicios_externos"
+              name="Servicios Subcontratados"
+              parent="rother_menu_root"
+              action="rother_servicio_externo_action"
+              sequence="10"/>
+
+</odoo>

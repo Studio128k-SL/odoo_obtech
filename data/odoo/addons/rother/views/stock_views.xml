@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="rother_stock_picking_list_view" model="ir.ui.view">
+        <field name="name">rother.stock.picking.list</field>
+        <field name="model">stock.picking</field>
+        <field name="arch" type="xml">
+            <list string="Recepciones">
+                <field name="name" string="Referencia"/>
+                <field name="partner_id" string="Contacto"/>
+                <field name="scheduled_date" string="Fecha programada"/>
+                <field name="origin" string="Documento de origen"/>
+                <field name="resumen_productos" string="Ref. Fab | Ref. Prov | Productos" widget="text"/>
+                <field name="state" string="Estado" widget="badge"
+                    decoration-success="state == 'done'"
+                    decoration-warning="state == 'assigned'"
+                    decoration-info="state == 'waiting'"/>
+            </list>
+        </field>
+    </record>
+</odoo>

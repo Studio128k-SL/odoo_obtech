@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Vista lista GPV -->
+    <record id="rother_gpv_tree_view" model="ir.ui.view">
+        <field name="name">rother.gpv.tree</field>
+        <field name="model">rother.gpv</field>
+        <field name="arch" type="xml">
+            <list string="Grupos de Compra">
+                <field name="name" string="ID del Grupo" width="33%"/>
+                <field name="fecha" string="Fecha" width="33%"/>
+                <field name="entregar_a_id" string="Entregar a" width="34%"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista formulario GPV -->
+    <record id="rother_gpv_form_view" model="ir.ui.view">
+        <field name="name">rother.gpv.form</field>
+        <field name="model">rother.gpv</field>
+        <field name="arch" type="xml">
+            <form string="Grupo de Compra" class="o_form_fullwidth">
+                <header>
+                    <button name="%(rother.action_report_gpv)d"
+                            string="Imprimir GPV"
+                            type="action"
+                            class="btn-primary"/>
+                    <button name="action_add_from_catalog"
+                            string="Catálogo"
+                            type="object"
+                            class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <field name="fecha" string="Fecha"/>
+                        <field name="entregar_a_id" string="Entregar a"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="importe_total" string="Importe Total" readonly="1" widget="monetary"
+                            options="{'currency_field': 'currency_id'}"/>
+                    </group>
+                    <notebook>
+                        <page string="Líneas">
+                            <field name="gpv_linea_ids">
+                                <list editable="bottom" 
+                                    decoration-bf="display_type == 'line_section'"
+                                    decoration-it="display_type == 'line_note'">
+                                    <control>
+                                        <create name="add_product" string="Añadir producto"/>
+                                        <create name="add_section" string="Añadir sección" context="{'default_display_type': 'line_section'}"/>
+                                        <create name="add_note" string="Añadir nota" context="{'default_display_type': 'line_note'}"/>
+                                    </control>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="display_type" column_invisible="True"/>
+                                    <field name="project_id" string="Proyecto"
+                                        invisible="display_type != 'line_section'"/>
+                                    <field name="name" string="Información"
+                                        invisible="display_type not in ('line_section', 'line_note')"/>
+                                    <field name="product_id" string="Producto"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="name" string="Descripción"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="ref_proveedor_producto" string="Ref. Proveedor"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="ref_fabricante" string="Ref. Fabricante"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="descuento" string="Descuento (%)"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="cantidad" string="Cantidad"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="precio_unitario" string="P. Unitario" widget="monetary"
+                                        options="{'currency_field': 'currency_id'}"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="taxes_id" string="Impuestos" widget="many2many_tags" 
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="proveedor_id" string="Proveedor"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                    <field name="importe_total_display" string="Importe Total" readonly="1"
+                                        invisible="display_type in ('line_section', 'line_note')"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Pedidos Virtuales">
+                            <field name="pv_ids">
+                                <list>
+                                    <field name="proveedor_id" string="Proveedor" width="25%"/>
+                                    <field name="referencia_proveedor" string="Referencia Proveedor" width="25%"/>
+                                    <field name="llegada_prevista" string="Llegada Prevista" width="25%"/>
+                                    <field name="state" string="Estado" width="25%"/>
+                                </list>
+                                <form>
+                                    <header>
+                                        <button name="%(rother.action_report_pv)d"
+                                                string="Imprimir PV"
+                                                type="action"
+                                                class="btn-secondary"/>
+                                        <button name="action_crear_pedido"
+                                                string="Crear Pedido"
+                                                type="object"
+                                                class="btn-primary"
+                                                invisible="state != 'draft'"/>
+                                        <button name="action_confirmar_pedido"
+                                                string="Confirmar Pedido"
+                                                type="object"
+                                                class="btn-primary"
+                                                invisible="state != 'order_created'"/>
+                                        <button name="action_ver_recepciones"
+                                                string="Recepciones"
+                                                type="object"
+                                                class="btn-secondary"
+                                                invisible="state != 'confirmed'"/>
+                                        <field name="state" widget="statusbar"
+                                            statusbar_visible="draft,order_created,confirmed, picking"/>
+                                    </header>
+                                    <sheet>
+                                        <group>
+                                            <group>
+                                                <field name="proveedor_id" string="Proveedor"/>
+                                                <field name="referencia_proveedor" string="Referencia Proveedor"/>
+                                                <field name="referencia_gpv" string="Referencia GPV" readonly="1"/>
+                                            </group>
+                                            <group>
+                                                <field name="llegada_prevista" string="Llegada Prevista"/>
+                                                <field name="purchase_order_ids" string="Pedidos de Compra" readonly="1" widget="many2many_tags"/>                                            </group>
+                                        </group>
+                                        <field name="linea_ids">
+                                            <list editable="bottom"
+                                                decoration-bf="display_type == 'line_section'"
+                                                decoration-it="display_type == 'line_note'">
+                                                <field name="display_type" column_invisible="True"/>
+                                            <field name="seccion_nombre" string="Proyecto" readonly="1"
+                                                invisible="display_type != 'line_section'"/>
+                                            <field name="nombre" string="Producto/Información" readonly="1"/>
+                                            <field name="product_id" string="Ref. Producto" readonly="1"
+                                                invisible="display_type in ('line_section', 'line_note')"/>
+                                            <field name="ref_proveedor_producto" string="Ref. Proveedor" readonly="1"
+                                                invisible="display_type in ('line_section', 'line_note')"/>
+                                            <field name="ref_fabricante" string="Ref. Fabricante" readonly="1"
+                                                invisible="display_type in ('line_section', 'line_note')"/>
+                                            <field name="cantidad" string="Cantidad" readonly="1"
+                                                invisible="display_type in ('line_section', 'line_note')"/>
+                                            <field name="currency_id" column_invisible="True"/>
+                                            <field name="precio_unitario" string="P. Unitario" widget="monetary"
+                                                options="{'currency_field': 'currency_id'}"
+                                                invisible="display_type in ('line_section', 'line_note')"/>
+                                            <field name="taxes_id" string="Impuestos" widget="many2many_tags"
+                                                invisible="display_type in ('line_section', 'line_note')"/>
+                                            <field name="importe_total_display" string="Total" readonly="1"
+                                                invisible="display_type in ('line_section', 'line_note')"/>
+                                            </list>
+                                        </field>
+                                    </sheet>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción GPV -->
+    <record id="rother_gpv_action" model="ir.actions.act_window">
+        <field name="name">Grupos de Compra</field>
+        <field name="res_model">rother.gpv</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Vista formulario PV -->
+    <record id="rother_pv_form_view" model="ir.ui.view">
+        <field name="name">rother.pv.form</field>
+        <field name="model">rother.pv</field>
+        <field name="arch" type="xml">
+            <form string="Pedido Virtual">
+                <sheet>
+                    <group>
+                        <field name="proveedor_id" string="Proveedor"/>
+                        <field name="referencia_proveedor" string="Referencia Proveedor"/>
+                        <field name="llegada_prevista" string="Llegada Prevista"/>
+                    </group>
+                    <field name="linea_ids">
+                        <list editable="bottom">
+                            <field name="display_type" column_invisible="True"/>
+                            <field name="seccion_nombre" string="Proyecto" readonly="1"
+                                invisible="display_type != 'line_section'"/>
+                            <field name="nombre" string="Producto/Descripción" readonly="1"/>
+                            <field name="product_id" string="Ref. Producto" readonly="1"
+                                invisible="display_type in ('line_section', 'line_note')"/>
+                            <field name="ref_proveedor_producto" string="Ref. Proveedor" readonly="1"
+                                invisible="display_type in ('line_section', 'line_note')"/>
+                            <field name="ref_fabricante" string="Ref. Fabricante" readonly="1"
+                                invisible="display_type in ('line_section', 'line_note')"/>
+                            <field name="cantidad" string="Cantidad" readonly="1"
+                                invisible="display_type in ('line_section', 'line_note')"/>
+                            <field name="precio_unitario" string="P. Unitario" readonly="1"
+                                invisible="display_type in ('line_section', 'line_note')"/>
+                            <field name="taxes_id" string="Impuestos" widget="many2many_tags" readonly="1"
+                                invisible="display_type in ('line_section', 'line_note')"/>
+                            <field name="importe_total_display" string="Total" readonly="1"
+                                invisible="display_type in ('line_section', 'line_note')"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Submenú GPV -->
+    <menuitem id="rother_menu_gpv"
+            name="Grupos de Compra"
+            parent="rother_menu_root"
+            action="rother_gpv_action"
+            sequence="2" />
+
+    <!-- Menú Compras dentro de Rother -->
+    <menuitem id="rother_compras_menu"
+            name="Compras"
+            parent="rother_menu_root"
+            sequence="3"/>
+
+    <menuitem id="rother_menu_solicitudes"
+            name="Solicitudes de Presupuesto"
+            parent="rother_compras_menu"
+            action="purchase.purchase_rfq"
+            sequence="1"/>
+
+    <menuitem id="rother_menu_pedidos_compra"
+            name="Pedidos de Compra"
+            parent="rother_compras_menu"
+            action="purchase.purchase_form_action"
+            sequence="2"/>
+</odoo>

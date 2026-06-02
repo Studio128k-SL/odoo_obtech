@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_rother_product,access_rother_product,product.model_product_template,base.group_user,1,0,0,0
+access_rother_presupuesto,access_rother_presupuesto,rother.model_rother_presupuesto,base.group_user,1,1,1,1
+access_rother_presupuesto_linea,access_rother_presupuesto_linea,rother.model_rother_presupuesto_linea,base.group_user,1,1,1,1
+access_rother_gpv,access_rother_gpv,rother.model_rother_gpv,base.group_user,1,1,1,1
+access_rother_gpv_linea,access_rother_gpv_linea,rother.model_rother_gpv_linea,base.group_user,1,1,1,1
+access_rother_pv,access_rother_pv,rother.model_rother_pv,base.group_user,1,1,1,1
+access_rother_pv_linea,access_rother_pv_linea,rother.model_rother_pv_linea,base.group_user,1,1,1,1
+access_rother_gpv_linea2,access_rother_gpv_linea2,rother.model_rother_gpv_linea2,base.group_user,1,1,1,1
+access_rother_servicio_externo,access_rother_servicio_externo,rother.model_rother_servicio_externo,base.group_user,1,1,1,1
+access_rother_servicio_externo_linea,access_rother_servicio_externo_linea,rother.model_rother_servicio_externo_linea,base.group_user,1,1,1,1
