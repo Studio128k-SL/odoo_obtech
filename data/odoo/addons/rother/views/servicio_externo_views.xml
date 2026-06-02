@@ -151,7 +151,7 @@
 
     <!-- Menú -->
     <menuitem id="rother_menu_servicios_externos"
-              name="Servicios Externos"
+              name="Servicios Subcontratados"
               parent="rother_menu_root"
               action="rother_servicio_externo_action"
               sequence="10"/>

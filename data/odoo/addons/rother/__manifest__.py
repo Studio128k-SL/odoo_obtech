@@ -2,7 +2,7 @@
     'name': 'Rother',
     'version': '18.0.1.0.0',
     'category': 'Inventory',
-    'summary': 'Módulo de productos de Rother',
+    'summary': 'Módulo de Rother',
     'author': 'Rother Industries & Technologies',
     'license': 'LGPL-3',
     'depends': ['product', 'stock', 'purchase', 'sale', 'mail', 'project'],
