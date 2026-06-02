@@ -1,5 +1,6 @@
 from odoo import models, fields, api
 from markupsafe import Markup
+from dateutil.relativedelta import relativedelta
 
 class RotherServicioExterno(models.Model):
     _name = 'rother.servicio.externo'
@@ -15,8 +16,19 @@ class RotherServicioExterno(models.Model):
         'account.tax',
         string= 'Impuestos',
     )
-    periodo_pago = fields.Char(string='Periodos de pago', tracking= True)
-    fecha_finalizacion= fields.Date(string='Fecha de Finalización', tracking=True)
+    fecha_inicio = fields.Date(string='Fecha de Inicio')
+    periodo_cantidad = fields.Integer(string='Cantidad', default = 1)
+    periodo_tipo = fields.Selection([
+        ('days', 'Días'),
+        ('months', 'Meses'),
+        ('years', 'Años'),
+    ], string='Periodo', default='months')
+    fecha_finalizacion= fields.Date(
+        string='Fecha de Finalización', 
+        compute = '_compute_fecha_finalizacion',
+        store = True,
+        readonly = True,
+    )
     extra_ids=fields.One2many('rother.servicio.externo.linea', 'servicio_id', string='Servicios Extra')
     precio_total = fields.Float(
         string='Precio Total',
@@ -62,6 +74,37 @@ class RotherServicioExterno(models.Model):
         ])
         return usuarios.mapped('partner_id').ids
 
+    @api.depends('fecha_inicio', 'periodo_cantidad', 'periodo_tipo')
+    def _compute_fecha_finalizacion(self):
+        for rec in self: 
+            if rec.fecha_inicio and rec.periodo_cantidad and rec.periodo_tipo:
+                rec.fecha_finalizacion = rec.fecha_inicio + relativedelta(
+                    **{rec.periodo_tipo: rec.periodo_cantidad}
+                )
+            elif not rec.fecha_finalizacion: 
+                rec.fecha_finalizacion = False
+    
+    @api.depends('precio', 'extra_ids.precio')
+    def _compute_precio_total(self):
+        for rec in self:
+            rec.precio_total = rec.precio + sum(rec.extra_ids.mapped('precio'))
+    
+    def action_renovar(self):
+        for rec in self:
+            if rec.fecha_finalizacion and rec.periodo_cantidad and rec.periodo_tipo:
+                antigua = rec.fecha_finalizacion
+                rec.fecha_inicio = rec.fecha_finalizacion
+                rec.fecha_finalizacion = rec.fecha_inicio + relativedelta(
+                    **{rec.periodo_tipo: rec.periodo_cantidad}
+                )
+                rec.message_post(
+                    body = Markup(
+                        "🔄 El servicio <b>%s</b> ha sido renovado. Nueva fecha de finalización: <b>%s</b> (anterior: %s)."
+                    ) % (rec.name, rec.fecha_finalizacion, antigua),
+                    subject=f"Servicio renovado: {rec.name}",
+                    subtype_xmlid='mail.mt_comment',
+                )
+
 class RotherServicioExternoLinea(models.Model):
     _name= 'rother.servicio.externo.linea'
     _description = 'Línea de Servicio Extra'
@@ -69,5 +112,5 @@ class RotherServicioExternoLinea(models.Model):
     servicio_id = fields.Many2one('rother.servicio.externo', string = 'Servicio', ondelete='cascade')
     name = fields.Char(string='Nombre', required=True)
     precio = fields.Float(string='Precio', digits= 'Precio Producto')
-    periodo_pago = fields.Char(string='Periodo de Pago', tracking=True)
+    periodo_pago = fields.Char(string='Periodo de Pago')
     fecha_finalizacion = fields.Date(string='Fecha de Finalización')
