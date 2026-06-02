@@ -59,7 +59,7 @@ class RotherServicioExterno(models.Model):
         for rec in self:
             partes = []
             if rec.periodo_anios:
-                partes.append(f"{rec.periodo_anios} años(s)")
+                partes.append(f"{rec.periodo_anios} año(s)")
             if rec.periodo_meses:
                 partes.append(f"{rec.periodo_meses} mes(es)")
             if rec.periodo_dias:
