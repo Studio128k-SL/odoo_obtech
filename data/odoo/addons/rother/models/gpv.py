@@ -1,22 +1,24 @@
 from odoo import models, fields, api
 
+
 class RotherGPV(models.Model):
     _name = 'rother.gpv'
     _description = 'Grupo de Compra Rother'
-    _inherit=['product.catalog.mixin']
+    _inherit = ['product.catalog.mixin']
 
     name = fields.Char(string='Número', readonly=True, default='Nuevo')
     fecha = fields.Date(string='Fecha', default=fields.Date.today)
     entregar_a_id = fields.Many2one('res.partner', string='Entregar a')
     gpv_linea_ids = fields.One2many('rother.gpv.linea2', 'gpv_id', string='Líneas')
     pv_ids = fields.One2many('rother.pv', 'gpv_id', string='Pedidos Virtuales')
+    currency_id = fields.Many2one('res.currency', string='Moneda', related='company_id.currency_id', store= True)
     importe_total = fields.Float(string='Importe Total', compute='_compute_importe_total', store=True)
     company_id = fields.Many2one('res.company', string='Empresa', default=lambda self: self.env.company)
     state = fields.Selection([
         ('draft', 'Borrador'),
         ('done', 'Hecho'),
     ], string='Estado', default='draft')
-        
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -115,6 +117,7 @@ class RotherGPV(models.Model):
             for proveedor, lineas in lineas_por_proveedor.items():
                 pv = self.env['rother.pv'].create({
                     'gpv_id': rec.id,
+                    'referencia_proveedor': proveedor.ref or '',
                     'proveedor_id': proveedor.id,
                 })
                 for linea in lineas:
@@ -133,14 +136,7 @@ class RotherGPV(models.Model):
                         'display_type': linea.display_type or False,
                     })
 
-    def action_open_product_catalog(self):
-        return{
-            'type': 'ir.actions.act_window',
-            'name': 'Catálogo de Productos',
-            'res_model': 'product.product',
-            'view_mode': 'kanban,list,form',
-            'target': 'new',
-        }
+    # ── Catálogo de productos ──
 
     def _get_action_add_from_catalog_extra_context(self):
         return {
@@ -148,6 +144,22 @@ class RotherGPV(models.Model):
             'product_catalog_order_id': self.id,
             'product_catalog_order_model': self._name,
         }
+
+    def _get_product_catalog_domain(self):
+        return [('purchase_ok', '=', True)]
+
+    def _is_readonly(self):
+        return True
+
+    def _get_product_catalog_record_lines(self, product_ids, child_field=False, **kwargs):
+        lines = self.gpv_linea_ids.filtered(
+            lambda l: l.product_id.id in product_ids
+        )
+        result = {}
+        for line in lines:
+            result.setdefault(line.product_id, self.env['rother.gpv.linea2'])
+            result[line.product_id] |= line
+        return result
 
     def _update_order_line_info(self, product_id, quantity, **kwargs):
         line = self.gpv_linea_ids.filtered(lambda l: l.product_id.id == product_id)
@@ -167,33 +179,29 @@ class RotherGPV(models.Model):
                 'taxes_id': [(6, 0, product.taxes_id.ids)],
                 'ref_fabricante': product.x_Ref_fab or '',
             })
-        return product.lst_price    
-    
+        return product.lst_price
+
+    # ── Write / Unlink ──
+
     def write(self, vals):
-        import logging
-        _logger = logging.getLogger(__name__)
-        _logger.info("GPV write llamado con vals: %s", list(vals.keys()))
         result = super().write(vals)
         if 'gpv_linea_ids' in vals:
-            _logger.info("Regenerando PVs...")
             for rec in self:
                 rec.action_generar_pv()
         return result
-    
+
     def unlink(self):
         for rec in self:
             for pv in rec.pv_ids:
                 for po in pv.purchase_order_ids:
-                    # Cancelar recepciones asociadas
-                    for recepcion in po.picking_ids:
-                        if recepcion.state not in ('done', 'cancel'):
-                            recepcion.action_cancel()
-                    # Cancelar el pedido si está confirmado
+                    for picking in po.picking_ids:
+                        if picking.state not in ('done', 'cancel'):
+                            picking.action_cancel()
                     if po.state not in ('cancel',):
                         po.button_cancel()
                 pv.purchase_order_ids.unlink()
         return super().unlink()
-    
+
 
 class RotherGPVLinea2(models.Model):
     _name = 'rother.gpv.linea2'
@@ -209,38 +217,65 @@ class RotherGPVLinea2(models.Model):
     project_id = fields.Many2one('project.project', string='Proyecto')
     product_id = fields.Many2one('product.product', string='Producto')
     ref_fabricante = fields.Char(string='Ref. Fabricante', compute='_compute_ref_fabricante', store=True)
-    ref_proveedor_producto = fields.Char(string = 'Ref. Proveedor')
+    ref_proveedor_producto = fields.Char(string='Ref. Proveedor')
     cantidad = fields.Float(string='Cantidad', default=1.0)
     precio_unitario = fields.Float(string='Precio Unitario')
     taxes_id = fields.Many2many('account.tax', string='Impuestos')
-    descuento = fields.Float(string='Descuento (%)', default = 0.0)
+    descuento = fields.Float(string='Descuento (%)', default=0.0)
+    # Campo numérico para cálculos internos
     importe_total = fields.Float(string='Importe Total', compute='_compute_importe_total', store=True)
+    # Campo texto para mostrar el desglose en la vista
+    importe_total_display = fields.Char(string='Total', compute='_compute_importe_total_display')
     proveedor_id = fields.Many2one('res.partner', string='Proveedor')
     currency_id = fields.Many2one('res.currency', string='Moneda', related='gpv_id.company_id.currency_id', store=True)
 
-    @api.depends('cantidad', 'precio_unitario', 'taxes_id', 'display_type')
+    @api.depends('cantidad', 'precio_unitario', 'taxes_id', 'display_type', 'descuento')
     def _compute_importe_total(self):
         for rec in self:
             if rec.display_type:
                 rec.importe_total = 0.0
             else:
-                subtotal = rec.cantidad * rec.precio_unitario * (1 - rec.descuento/100)
+                subtotal = rec.cantidad * rec.precio_unitario * (1 - rec.descuento / 100)
                 if rec.taxes_id:
                     taxes = rec.taxes_id.compute_all(subtotal)
                     rec.importe_total = taxes['total_included']
                 else:
                     rec.importe_total = subtotal
 
+    @api.depends('cantidad', 'precio_unitario', 'taxes_id', 'descuento', 'display_type')
+    def _compute_importe_total_display(self):
+        for rec in self:
+            if rec.display_type:
+                rec.importe_total_display = ''
+            else:
+                subtotal = rec.cantidad * rec.precio_unitario
+                descuento_valor = subtotal * (rec.descuento / 100)
+                base = subtotal - descuento_valor
+                if rec.taxes_id:
+                    taxes = rec.taxes_id.compute_all(base)
+                    impuestos = taxes['total_included'] - base
+                    total = taxes['total_included']
+                else:
+                    impuestos = 0
+                    total = base
+
+                if rec.descuento > 0:
+                    rec.importe_total_display = '%.2f € (%.2f + %.2f - %.2f)' % (
+                        total, subtotal, impuestos, descuento_valor
+                    )
+                else:
+                    rec.importe_total_display = '%.2f € (%.2f + %.2f)' % (
+                        total, subtotal, impuestos
+                    )
+
     @api.onchange('product_id', 'proveedor_id')
     def _onchange_product_id(self):
         if self.product_id:
-            # Estos siempre se rellenan independientemente del proveedor
             self.precio_unitario = self.product_id.lst_price
             self.taxes_id = self.product_id.taxes_id
             self.ref_fabricante = self.product_id.x_Ref_fab
             self.name = self.product_id.name
 
-            # Buscar referencia del proveedor seleccionado
             supplier_info = self.product_id.seller_ids.filtered(
                 lambda s: s.partner_id == self.proveedor_id
             )[:1]
@@ -249,11 +284,22 @@ class RotherGPVLinea2(models.Model):
                 self.ref_proveedor_producto = supplier_info.product_code or ''
             else:
                 self.ref_proveedor_producto = ''
-    
+
     @api.depends('product_id')
     def _compute_ref_fabricante(self):
         for rec in self:
             rec.ref_fabricante = rec.product_id.x_Ref_fab if rec.product_id else ''
+
+    # Método para el catálogo de productos
+    def _get_product_catalog_lines_data(self, parent_record=None, **kwargs):
+        if not self:
+            return {'quantity': 0, 'readOnly': True}
+        return {
+            'quantity': sum(self.mapped('cantidad')),
+            'price': self[0].precio_unitario,
+            'readOnly': True,
+            'productType': self[0].product_id.type,
+        }
 
 
 class RotherGPVLinea(models.Model):
@@ -312,42 +358,38 @@ class RotherPV(models.Model):
             'res_model': 'stock.picking',
             'view_mode': 'list,form',
             'domain': [('id', 'in', pickings.ids)],
-            'context': {'list_view_ref': 'rother.rother_stock_picking_list_view'},
+            'context': {
+                'list_view_ref': 'rother.rother_stock_picking_list_view',
+                'search_default_group_by_origin': 1,
+            },
         }
-
 
     def action_crear_pedido(self):
         for rec in self:
             if rec.purchase_order_ids:
                 continue
 
-            # Ordenar las líneas para procesarlas en orden
             lineas_ordenadas = rec.linea_ids.sorted('id')
 
-            # Agrupar líneas por proyecto
-            # {project_id: [lineas]}
             lineas_por_proyecto = {}
             proyecto_actual = None
 
             for linea in lineas_ordenadas:
                 if linea.display_type == 'line_section' and linea.seccion_nombre:
-                    #Sección de proyecto: Busca por nombre
                     proyecto_actual = self.env['project.project'].search(
-                        [('name', '=', linea.seccion_nombre)], limit = 1
+                        [('name', '=', linea.seccion_nombre)], limit=1
                     )
                     lineas_por_proyecto.setdefault(proyecto_actual, [])
                     lineas_por_proyecto[proyecto_actual].append(linea)
                 else:
-                    # Resto de líneas: Van al proyecto actual
                     if proyecto_actual is not None:
                         lineas_por_proyecto[proyecto_actual].append(linea)
-                    
-            #Crear una solicitud de presupuesto por proyecto
+
             purchase_orders = []
             for proyecto, lineas in lineas_por_proyecto.items():
                 order_lines = []
                 for linea in lineas:
-                    if linea.display_type: 
+                    if linea.display_type:
                         order_lines.append((0, 0, {
                             'display_type': linea.display_type,
                             'name': linea.nombre if linea.nombre else '-',
@@ -376,9 +418,7 @@ class RotherPV(models.Model):
                     'order_line': order_lines,
                 })
                 purchase_orders.append(purchase_order)
-            
-            # Se guarda la primera solicitud en purchase_order_id (referencia principal)
-            # Las demás quedan vinculadas por origin y project_id
+
             if purchase_orders:
                 rec.state = 'order_created'
 
@@ -386,7 +426,7 @@ class RotherPV(models.Model):
         for rec in self:
             for purchase_order in rec.purchase_order_ids:
                 purchase_order.button_confirm()
-            rec.state = 'confirmed' 
+            rec.state = 'confirmed'
 
 
 class RotherPVLinea(models.Model):
@@ -402,11 +442,40 @@ class RotherPVLinea(models.Model):
     cantidad = fields.Float(string='Cantidad')
     precio_unitario = fields.Float(string='Precio Unitario')
     taxes_id = fields.Many2many('account.tax', string='Impuestos')
-    descuento = fields.Float(string='Descuento (%)', default= 0.0)
+    descuento = fields.Float(string='Descuento (%)', default=0.0)
+    # Campo numérico para cálculos internos y PDF
     importe_total = fields.Float(string='Importe Total')
+    # Campo texto para mostrar el desglose en la vista
+    importe_total_display = fields.Char(string='Total', compute='_compute_importe_total_display')
     seccion_nombre = fields.Char(string='Proyecto')
     display_type = fields.Selection([
         ('line_section', 'Sección'),
         ('line_note', 'Nota'),
-    ], default = False)
+    ], default=False)
     currency_id = fields.Many2one('res.currency', string='Moneda', related='pv_id.gpv_id.company_id.currency_id', store=True)
+
+    @api.depends('cantidad', 'precio_unitario', 'taxes_id', 'descuento', 'display_type')
+    def _compute_importe_total_display(self):
+        for rec in self:
+            if rec.display_type:
+                rec.importe_total_display = ''
+            else:
+                subtotal = rec.cantidad * rec.precio_unitario
+                descuento_valor = subtotal * (rec.descuento / 100)
+                base = subtotal - descuento_valor
+                if rec.taxes_id:
+                    taxes = rec.taxes_id.compute_all(base)
+                    impuestos = taxes['total_included'] - base
+                    total = taxes['total_included']
+                else:
+                    impuestos = 0
+                    total = base
+
+                if rec.descuento > 0:
+                    rec.importe_total_display = '%.2f € (%.2f + %.2f - %.2f)' % (
+                        total, subtotal, impuestos, descuento_valor
+                    )
+                else:
+                    rec.importe_total_display = '%.2f € (%.2f + %.2f)' % (
+                        total, subtotal, impuestos
+                    )

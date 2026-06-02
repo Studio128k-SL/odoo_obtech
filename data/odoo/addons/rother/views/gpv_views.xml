@@ -7,9 +7,9 @@
         <field name="model">rother.gpv</field>
         <field name="arch" type="xml">
             <list string="Grupos de Compra">
-                <field name="name" string="Número" />
-                <field name="fecha" string="Fecha" />
-                <field name="entregar_a_id" string="Entregar a"/>
+                <field name="name" string="ID del Grupo" width="33%"/>
+                <field name="fecha" string="Fecha" width="33%"/>
+                <field name="entregar_a_id" string="Entregar a" width="34%"/>
             </list>
         </field>
     </record>
@@ -39,7 +39,9 @@
                     <group>
                         <field name="fecha" string="Fecha"/>
                         <field name="entregar_a_id" string="Entregar a"/>
-                        <field name="importe_total" string="Importe Total" readonly="1"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="importe_total" string="Importe Total" readonly="1" widget="monetary"
+                            options="{'currency_field': 'currency_id'}"/>
                     </group>
                     <notebook>
                         <page string="Líneas">
@@ -78,8 +80,7 @@
                                         invisible="display_type in ('line_section', 'line_note')"/>
                                     <field name="proveedor_id" string="Proveedor"
                                         invisible="display_type in ('line_section', 'line_note')"/>
-                                    <field name="importe_total" string="Total" widget="monetary" readonly="1"
-                                        options="{'currency_field': 'currency_id'}"
+                                    <field name="importe_total_display" string="Importe Total" readonly="1"
                                         invisible="display_type in ('line_section', 'line_note')"/>
                                 </list>
                             </field>
@@ -87,10 +88,10 @@
                         <page string="Pedidos Virtuales">
                             <field name="pv_ids">
                                 <list>
-                                    <field name="proveedor_id" string="Proveedor"/>
-                                    <field name="referencia_proveedor" string="Referencia Proveedor"/>
-                                    <field name="llegada_prevista" string="Llegada Prevista"/>
-                                    <field name="state" string="Estado"/>
+                                    <field name="proveedor_id" string="Proveedor" width="25%"/>
+                                    <field name="referencia_proveedor" string="Referencia Proveedor" width="25%"/>
+                                    <field name="llegada_prevista" string="Llegada Prevista" width="25%"/>
+                                    <field name="state" string="Estado" width="25%"/>
                                 </list>
                                 <form>
                                     <header>
@@ -149,8 +150,7 @@
                                                 invisible="display_type in ('line_section', 'line_note')"/>
                                             <field name="taxes_id" string="Impuestos" widget="many2many_tags"
                                                 invisible="display_type in ('line_section', 'line_note')"/>
-                                            <field name="importe_total" string="Total" widget="monetary" readonly="1"
-                                                options="{'currency_field': 'currency_id'}"
+                                            <field name="importe_total_display" string="Total" readonly="1"
                                                 invisible="display_type in ('line_section', 'line_note')"/>
                                             </list>
                                         </field>
@@ -201,7 +201,7 @@
                                 invisible="display_type in ('line_section', 'line_note')"/>
                             <field name="taxes_id" string="Impuestos" widget="many2many_tags" readonly="1"
                                 invisible="display_type in ('line_section', 'line_note')"/>
-                            <field name="importe_total" string="Total" readonly="1"
+                            <field name="importe_total_display" string="Total" readonly="1"
                                 invisible="display_type in ('line_section', 'line_note')"/>
                         </list>
                     </field>
