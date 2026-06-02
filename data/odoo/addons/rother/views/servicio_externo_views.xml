@@ -128,11 +128,25 @@
         </field>
     </record>
 
+    <record id="rother_servicio_externo_search_view" model="ir.ui.view">
+        <field name="name">rother.servicio.externo.search</field>
+        <field name="model">rother.servicio.externo</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Servicios">
+                <field name="name"/>
+                <field name="proveedor_id"/>
+                <filter name="group_proveedor" string="Proveedor" context="{'group_by': 'proveedor_id'}"/>
+            </search>
+        </field>
+    </record>
+
     <!-- Acción -->
     <record id="rother_servicio_externo_action" model="ir.actions.act_window">
         <field name="name">Servicios Externos</field>
         <field name="res_model">rother.servicio.externo</field>
         <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="rother_servicio_externo_search_view"/>
+        <field name="context">{'search_default_group_proveedor': 1}</field>
     </record>
 
     <!-- Menú -->
