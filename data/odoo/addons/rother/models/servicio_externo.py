@@ -12,17 +12,13 @@ class RotherServicioExterno(models.Model):
     imagen=fields.Binary(string='Imagen')
     proveedor_id = fields.Many2one('res.partner', string='Proveedor', required=True, tracking=True)
     precio= fields.Float(string='Precio', digits='Product Price', tracking=True)
-    taxes_id= fields.Many2many(
-        'account.tax',
-        string= 'Impuestos',
-    )
+    taxes_id= fields.Many2many('account.tax',string= 'Impuestos')
     fecha_inicio = fields.Date(string='Fecha de Inicio')
-    periodo_cantidad = fields.Integer(string='Cantidad', default = 1)
-    periodo_tipo = fields.Selection([
-        ('days', 'Días'),
-        ('months', 'Meses'),
-        ('years', 'Años'),
-    ], string='Periodo', default='months')
+
+    periodo_anios = fields.Integer(string='Años', default = 0)
+    periodo_meses = fields.Integer(string='Meses', default=0)
+    periodo_dias= fields.Integer(string='Días', default=0)
+
     fecha_finalizacion= fields.Date(
         string='Fecha de Finalización', 
         compute = '_compute_fecha_finalizacion',
@@ -41,6 +37,35 @@ class RotherServicioExterno(models.Model):
         default = lambda self: self.env.company.currency_id,
     )
 
+    periodo_display = fields.Char(
+        string='Periodo de Renovación',
+        compute= '_compute_periodo_display',
+    )
+
+    @api.depends('fecha_inicio', 'periodo_anios', 'periodo_meses', 'periodo_dias')
+    def _compute_fecha_finalizacion(self):
+        for rec in self: 
+            if rec.fecha_inicio and (rec.periodo_anios or rec.periodo_meses or rec.periodo_dias):
+                rec.fecha_finalizacion = rec.fecha_inicio + relativedelta(
+                    years = rec.periodo_anios,
+                    months = rec.periodo_meses,
+                    days= rec.periodo_dias,
+                )
+            else: 
+                rec.fecha_finalizacion = False
+
+    @api.depends('periodo_anios', 'periodo_meses', 'periodo_dias')
+    def _compute_periodo_display(self):
+        for rec in self:
+            partes = []
+            if rec.periodo_anios:
+                partes.append(f"{rec.periodo_anios} años(s)")
+            if rec.periodo_meses:
+                partes.append(f"{rec.periodo_meses} mes(es)")
+            if rec.periodo_dias:
+                partes.append(f"{rec.periodo_dias} día(s)")
+            rec.periodo_display= ', '.join(partes) if partes else False
+    
     @api.depends('precio', 'extra_ids.precio')
     def _compute_precio_total(self):
         for rec in self:
@@ -74,36 +99,27 @@ class RotherServicioExterno(models.Model):
         ])
         return usuarios.mapped('partner_id').ids
 
-    @api.depends('fecha_inicio', 'periodo_cantidad', 'periodo_tipo')
-    def _compute_fecha_finalizacion(self):
-        for rec in self: 
-            if rec.fecha_inicio and rec.periodo_cantidad and rec.periodo_tipo:
-                rec.fecha_finalizacion = rec.fecha_inicio + relativedelta(
-                    **{rec.periodo_tipo: rec.periodo_cantidad}
-                )
-            elif not rec.fecha_finalizacion: 
-                rec.fecha_finalizacion = False
-    
-    @api.depends('precio', 'extra_ids.precio')
-    def _compute_precio_total(self):
-        for rec in self:
-            rec.precio_total = rec.precio + sum(rec.extra_ids.mapped('precio'))
-    
     def action_renovar(self):
         for rec in self:
-            if rec.fecha_finalizacion and rec.periodo_cantidad and rec.periodo_tipo:
+            if rec.fecha_finalizacion and (rec.periodo_anios or rec.periodo_meses or rec.periodo_dias):
                 antigua = rec.fecha_finalizacion
                 rec.fecha_inicio = rec.fecha_finalizacion
-                rec.fecha_finalizacion = rec.fecha_inicio + relativedelta(
-                    **{rec.periodo_tipo: rec.periodo_cantidad}
+                nueva = rec.fecha_inicio + relativedelta(
+                    years=rec.periodo_anios,
+                    months=rec.periodo_meses,
+                    days=rec.periodo_dias,
                 )
+                rec.fecha_finalizacion = nueva
                 rec.message_post(
                     body = Markup(
                         "🔄 El servicio <b>%s</b> ha sido renovado. Nueva fecha de finalización: <b>%s</b> (anterior: %s)."
-                    ) % (rec.name, rec.fecha_finalizacion, antigua),
+                    ) % (rec.name, nueva, antigua),
                     subject=f"Servicio renovado: {rec.name}",
                     subtype_xmlid='mail.mt_comment',
                 )
+    
+    def action_guardar(self):
+        return True
 
 class RotherServicioExternoLinea(models.Model):
     _name= 'rother.servicio.externo.linea'
