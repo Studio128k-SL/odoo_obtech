@@ -81,11 +81,11 @@
                 <div class="label-container">
                     <div class="barcode-section">
                         <t t-if="o.barcode">
-                                <img t-att-src="'http://172.17.0.1/report/barcode/Code128/' + o.barcode"/>                            
-                            <div class="barcode-number">
-                                <span t-out="o.x_Ref_fab"/>
-                            </div>
+                                <img t-att-src="'/report/barcode/Code128/' + o.barcode"/>                       
                         </t>
+                        <div class="barcode-number">
+                            <span t-out="o.x_Ref_fab"/>
+                        </div>
                     </div>
                     <div class="product-name">
                         <span t-field="o.name"/>
