@@ -13,6 +13,11 @@
                 <field name="x_Ref_fab" string="Referencia Fabricante"/>
             </xpath>
 
+            <!-- Ocultamos el botón nativo de Imprimir Etiquetas para que solo se use 'Impresiones' -->
+            <xpath expr="//button[@name='action_open_label_layout']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
             <!-- Página de Impresiones -->
             <xpath expr="//notebook" position="inside">
                 <page string="Impresiones" name="impresiones">
@@ -81,4 +86,5 @@
             </xpath>
         </field>
     </record>
+
 </odoo>
