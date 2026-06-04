@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Vista Kanban (cuadrícula) -->
+    <!-- Vista Kanban -->
     <record id="rother_servicio_externo_kanban_view" model="ir.ui.view">
         <field name="name">rother.servicio.externo.kanban</field>
         <field name="model">rother.servicio.externo</field>
@@ -14,6 +14,9 @@
                         </div>
                         <div>
                             <strong><field name="name"/></strong>
+                            <div class="text-muted">
+                                <field name="proveedor_id"/>
+                            </div>
                             <div>
                                 <field name="precio" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             </div>
@@ -128,31 +131,67 @@
         </field>
     </record>
 
-    <record id="rother_servicio_externo_search_view" model="ir.ui.view">
-        <field name="name">rother.servicio.externo.search</field>
-        <field name="model">rother.servicio.externo</field>
+    <!-- Vista de búsqueda del balance -->
+    <record id="rother_servicio_externo_balance_search" model="ir.ui.view">
+        <field name="name">rother.servicio.externo.report.search</field>
+        <field name="model">rother.servicio.externo.report</field>
         <field name="arch" type="xml">
-            <search string="Buscar Servicios">
-                <field name="name"/>
-                <field name="proveedor_id"/>
-                <filter name="group_proveedor" string="Proveedor" context="{'group_by': 'proveedor_id'}"/>
+            <search string="Análisis de Balance">
+                <filter string="Contrataciones" name="filter_inicio" domain="[('tipo', '=', 'inicio')]"/>
+                <filter string="Renovaciones" name="filter_renovacion" domain="[('tipo', '=', 'renovacion')]"/>
+                <separator/>
+                <group expand="1" string="Agrupar por">
+                    <filter string="Proveedor" name="group_proveedor" context="{'group_by': 'proveedor_id'}"/>
+                    <filter string="Servicio" name="group_servicio" context="{'group_by': 'name_display'}"/>
+                    <filter string="Mes" name="group_mes" context="{'group_by': 'mes'}"/>
+                </group>
             </search>
         </field>
     </record>
 
-    <!-- Acción -->
-    <record id="rother_servicio_externo_action" model="ir.actions.act_window">
-        <field name="name">Servicios Externos</field>
-        <field name="res_model">rother.servicio.externo</field>
-        <field name="view_mode">kanban,list,form</field>
-        <field name="search_view_id" ref="rother_servicio_externo_search_view"/>
-        <field name="context">{'search_default_group_proveedor': 1}</field>
+    <!-- Vista gráfica del balance -->
+    <record id="rother_servicio_externo_balance_view" model="ir.ui.view">
+        <field name="name">rother.servicio.externo.report.graph</field>
+        <field name="model">rother.servicio.externo.report</field>
+        <field name="arch" type="xml">
+            <graph string="Balance Anual" type="bar" stacked="0">
+                <field name="name_display" type="row"/>
+                <field name="precio_total" type="measure"/>
+            </graph>
+        </field>
     </record>
 
-    <!-- Menú -->
-    <menuitem id="rother_menu_servicios_externos"
-              name="Servicios Subcontratados"
-              action="rother_servicio_externo_action"
-              sequence="100"/>
+    <!-- Action del balance -->
+    <record id="rother_balance_servicios_action" model="ir.actions.act_window">
+        <field name="name">Balance</field>
+        <field name="res_model">rother.servicio.externo.report</field>
+        <field name="view_mode">graph,pivot</field>
+        <field name="view_id" ref="rother_servicio_externo_balance_view"/>
+        <field name="search_view_id" ref="rother_servicio_externo_balance_search"/>
+        <field name="context">{'search_default_group_servicio': 1}</field>
+    </record>
 
+    <!-- Action de servicios -->
+    <record id="rother_servicio_externo_action" model="ir.actions.act_window">
+        <field name="name">Servicios</field>
+        <field name="res_model">rother.servicio.externo</field>
+        <field name="view_mode">kanban,list,form</field>
+    </record>
+
+    <!-- Menús -->
+    <menuitem id="rother_menu_servicios_externos" 
+            name="Servicios" 
+            sequence="100"/>
+
+    <menuitem id="rother_menu_servicios_list" 
+            name="Servicios" 
+            parent="rother_menu_servicios_externos" 
+            action="rother_servicio_externo_action" 
+            sequence="1"/>
+
+    <menuitem id="rother_menu_balance"
+            name="Balance"
+            parent="rother_menu_servicios_externos"
+            action="rother_balance_servicios_action"
+            sequence="2"/>
 </odoo>

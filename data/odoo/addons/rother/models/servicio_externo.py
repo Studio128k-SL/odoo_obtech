@@ -1,4 +1,4 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, tools
 from markupsafe import Markup
 from dateutil.relativedelta import relativedelta
 
@@ -7,7 +7,7 @@ class RotherServicioExterno(models.Model):
     _description= 'Servicios Externos'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
-    name=fields.Char(string='Nombre del Servicio', required=True, trackin=True)
+    name=fields.Char(string='Nombre del Servicio', required=True, tracking=True)
     descripcion=fields.Text(string='Descripción' ,widget='text')
     imagen=fields.Binary(string='Imagen')
     proveedor_id = fields.Many2one('res.partner', string='Proveedor', required=True, tracking=True)
@@ -121,6 +121,7 @@ class RotherServicioExterno(models.Model):
     def action_guardar(self):
         return True
 
+
 class RotherServicioExternoLinea(models.Model):
     _name= 'rother.servicio.externo.linea'
     _description = 'Línea de Servicio Extra'
@@ -130,3 +131,68 @@ class RotherServicioExternoLinea(models.Model):
     precio = fields.Float(string='Precio', digits= 'Precio Producto')
     periodo_pago = fields.Char(string='Periodo de Pago')
     fecha_finalizacion = fields.Date(string='Fecha de Finalización')
+
+
+class ServicioExternoReport(models.Model):
+    _name = 'rother.servicio.externo.report'
+    _description = 'Análisis Gastos Servicios'
+    _auto = False
+
+    name = fields.Char(string='Servicio', readonly=True)
+    name_display = fields.Char(string='Servicio (Proveedor)', readonly=True)
+    proveedor_id = fields.Many2one('res.partner', string='Proveedor', readonly=True)
+    precio_total = fields.Float(string='Precio Total', readonly=True)
+    mes = fields.Selection([
+        ('01', 'Enero'), ('02', 'Febrero'), ('03', 'Marzo'),
+        ('04', 'Abril'), ('05', 'Mayo'), ('06', 'Junio'),
+        ('07', 'Julio'), ('08', 'Agosto'), ('09', 'Septiembre'),
+        ('10', 'Octubre'), ('11', 'Noviembre'), ('12', 'Diciembre'),
+    ], string='Mes', readonly=True)
+    tipo = fields.Selection([
+        ('inicio', 'Contratación'),
+        ('renovacion', 'Renovación'),
+    ], string='Tipo', readonly=True)
+
+    def init(self):
+        tools.drop_view_if_exists(self.env.cr, self._table)
+        self.env.cr.execute("""
+            CREATE OR REPLACE VIEW %s AS (
+                SELECT
+                    s.id * 2 AS id,
+                    s.name,
+                    s.name || ' (' || p.name || ')' AS name_display,
+                    s.proveedor_id,
+                    s.precio_total,
+                    TO_CHAR(s.fecha_inicio, 'MM') AS mes,
+                    'inicio' AS tipo
+                FROM rother_servicio_externo s
+                LEFT JOIN res_partner p ON p.id = s.proveedor_id
+                WHERE s.fecha_inicio IS NOT NULL
+
+                UNION ALL
+
+                SELECT
+                    s.id * 2 + 1 AS id,
+                    s.name,
+                    s.name || ' (' || p.name || ')' AS name_display,
+                    s.proveedor_id,
+                    s.precio_total,
+                    TO_CHAR(s.fecha_finalizacion, 'MM') AS mes,
+                    'renovacion' AS tipo
+                FROM rother_servicio_externo s
+                LEFT JOIN res_partner p ON p.id = s.proveedor_id
+                WHERE s.fecha_finalizacion IS NOT NULL
+
+                UNION ALL
+
+                SELECT
+                    -m.n AS id,
+                    NULL AS name,
+                    NULL AS name_display,
+                    NULL AS proveedor_id,
+                    0 AS precio_total,
+                    LPAD(m.n::text, 2, '0') AS mes,
+                    'placeholder' AS tipo
+                FROM generate_series(1, 12) AS m(n)
+            )
+        """ % self._table)  

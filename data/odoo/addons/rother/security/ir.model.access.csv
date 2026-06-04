@@ -10,3 +10,4 @@ access_rother_gpv_linea2,access_rother_gpv_linea2,rother.model_rother_gpv_linea2
 access_rother_servicio_externo,access_rother_servicio_externo,rother.model_rother_servicio_externo,base.group_user,1,1,1,1
 access_rother_servicio_externo_linea,access_rother_servicio_externo_linea,rother.model_rother_servicio_externo_linea,base.group_user,1,1,1,1
 access_rother_product_label_wizard,rother.product.label.wizard,model_rother_product_label_wizard,base.group_user,1,1,1,1
+access_rother_servicio_externo_report,rother.servicio.externo.report,model_rother_servicio_externo_report,base.group_user,1,0,0,0
