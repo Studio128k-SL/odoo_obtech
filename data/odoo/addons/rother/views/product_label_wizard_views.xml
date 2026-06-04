@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="rother_product_label_wizard_form" model="ir.ui.view">
+        <field name="name">rother.product.label.wizard.form</field>
+        <field name="model">rother.product.label.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Imprimir etiqueta">
+                <group>
+                    <field name="report_id" string="Informe de etiqueta"/>
+                    <field name="label_type" string="Tipo de etiqueta" />
+                </group>
+                <footer>
+                    <button name="action_print"
+                        string="Imprimir"
+                        type="object"
+                        class="btn-primary"/>
+                    <button string="Cancelar"
+                        class="btn-secondary"
+                        special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="rother_product_label_wizard_action" model="ir.actions.act_window">
+        <field name="name">Imprimir Etiqueta</field>
+        <field name="res_model">rother.product.label.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_product_id': active_id} </field>
+    </record>
+</odoo>
