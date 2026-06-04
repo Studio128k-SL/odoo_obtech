@@ -31,6 +31,14 @@
                             class="btn-secondary"/>
                 </header>
                 <sheet>
+                    <div class="alert alert-info" role="alert" style="margin-bottom: 16px;">
+                        <p><b>FUNCIONAMIENTO</b></p>
+                        <ul>
+                            <li><b>IMPORTANTE</b>: Si no eres el que va a realizar la compra no rellenes el apartado de proveedor</li>
+                            <li>Solo se van a generar los <b>Pedidos Virtuales</b> al añadir los proveedores</li>
+                            <li>Los PDFs estarán vacíos hasta que se generen los Pedidos Virtuales</li>
+                        </ul>
+                    </div>
                     <div class="oe_title">
                         <h1>
                             <field name="name" readonly="1"/>

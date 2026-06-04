@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!--  Acción de reporte GPV completo -->
     <record id="action_report_gpv" model="ir.actions.report">
         <field name="name">Imprimir GPV</field>
         <field name="model">rother.gpv</field>
@@ -11,92 +10,65 @@
         <field name="print_report_name">'Informe - %s' % object.name</field>
         <field name="binding_model_id" ref="model_rother_gpv" />
         <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="rother_paperformat_a4"/>
     </record>
 
-    <!-- Acción de reporte PV individual -->
     <record id="action_report_pv" model="ir.actions.report">
         <field name="name">Imprimir PV</field>
         <field name="model">rother.pv</field>
         <field name="report_type">qweb-pdf</field>
-        <field name="report_name">rother.report_pv</field>    
-        <field name="report_file">rother.report_pv</field>    
+        <field name="report_name">rother.report_pv</field>
+        <field name="report_file">rother.report_pv</field>
         <field name="print_report_name">'%s - %s' % (object.referencia_gpv, object.proveedor_id.name)</field>
         <field name="binding_model_id" ref="model_rother_pv" />
         <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="rother_paperformat_a4"/>
     </record>
 
-    <!-- Plantilla GPV completa -->
     <template id="report_gpv">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="gpv">
-                <t t-call="web.external_layout">
-                    <t t-foreach="gpv.pv_ids" t-as="pv">
+                <t t-foreach="gpv.pv_ids" t-as="pv">
+                    <t t-call="web.external_layout">
                         <div class="page">
                             <style>
                                 .rother-header { margin-bottom: 24px; }
                                 .rother-header h2 { color: #2c3e50; font-size: 22px; margin-bottom: 6px; }
                                 .rother-header h3 { color: #555; font-size: 17px; margin-bottom: 6px; }
                                 .rother-header p { color: #777; font-size: 14px; margin: 4px 0; }
-                                .rother-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+                                .rother-table { width: 98%; border-collapse: collapse; font-size: 12px; table-layout: fixed; margin: 0 auto; }
+                                .rother-table td, .rother-table th { text-align: center; word-wrap: break-word; }
                                 .rother-table thead tr { background-color: #2c3e50; color: white; }
-                                .rother-table thead th { padding: 12px 14px; text-align: left; font-weight: 600; }
                                 .rother-table thead th.text-right { text-align: right; }
                                 .rother-table tbody tr:nth-child(even) { background-color: #f9f9f9; }
-                                .rother-table tbody td { padding: 10px 14px; border-bottom: 1px solid #e0e0e0; }
                                 .rother-table tbody td.text-right { text-align: right; }
                                 .rother-table tfoot tr { background-color: #ecf0f1; }
-                                .rother-table tfoot td { padding: 12px 14px; font-weight: bold; font-size: 15px; border-top: 2px solid #2c3e50; }
+                                .rother-table tfoot td { padding: 8px 6px; font-weight: bold; font-size: 13px; border-top: 2px solid #2c3e50; }
                                 .rother-table tfoot td.text-right { text-align: right; }
-                                .footer { display: none !important; }
                             </style>
 
-                            <div class="page" t-att-style="'page-break-before: always;' if not pv_first else ''">
-                                <div class="row mb-4">
-                                    <div class="col-6">
-                                        <div style="display: flex; align-items: flex-start;">
-                                            <t t-if="res_company.logo">
-                                                <img t-att-src="image_data_uri(res_company.logo)"
-                                                    style="max-height: 100px; max-width: 210px; margin-right: 12px;"/>
-                                            </t>
-                                            <div style="font-size: 14px; line-height: 1.4;">
-                                                <strong t-esc="res_company.name"/>
-                                                <br/>
-                                                <t t-if="res_company.street"><span t-esc="res_company.street"/><br/></t>
-                                                <t t-if="res_company.zip or res_company.city">
-                                                    <span t-esc="'%s %s' % (res_company.zip or '', res_company.city or '')"/><br/>
-                                                </t>
-                                                <t t-if="res_company.state_id"><span t-esc="res_company.state_id.name"/><br/></t>
-                                                <t t-if="res_company.country_id"><span t-esc="res_company.country_id.name"/></t>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-6 text-right">
-                                        <div class="rother-header">
-                                            <h2>Grupo de Compra: <span t-field="gpv.name"/></h2>
-                                            <h3>Proveedor: <span t-field="pv.proveedor_id.name"/></h3>
-                                            <t t-if="pv.referencia_proveedor">
-                                                <p>Referencia Proveedor: <span t-field="pv.referencia_proveedor"/></p>
-                                            </t>
-                                            <t t-if="pv.llegada_prevista">
-                                                <p>Llegada Prevista: <span t-field="pv.llegada_prevista"/></p>
-                                            </t>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="rother-header">
+                                <h2>Grupo de Compra: <span t-field="gpv.name"/></h2>
+                                <h3>Proveedor: <span t-field="pv.proveedor_id.name"/></h3>
+                                <t t-if="pv.referencia_proveedor">
+                                    <p>Referencia Proveedor: <span t-field="pv.referencia_proveedor"/></p>
+                                </t>
+                                <t t-if="pv.llegada_prevista">
+                                    <p>Llegada Prevista: <span t-field="pv.llegada_prevista"/></p>
+                                </t>
                             </div>
-                            
 
                             <table class="rother-table">
                                 <thead>
                                     <tr>
-                                        <th>Referencia</th>
-                                        <th>Producto</th>
-                                        <th>Ref. Fab.</th>
-                                        <th class="text-right">Cantidad</th>
-                                        <th class="text-right">Precio Unit.</th>
-                                        <th class="text-right">Descuento (%)</th>
-                                        <th>Impuestos</th>
-                                        <th class="text-right">Total</th>
+                                        <th style="width: 12%;">Referencia</th>
+                                        <th style="width: 24%;">Producto</th>
+                                        <th style="width: 10%;">Ref. Fab.</th>
+                                        <th class="text-right" style="width: 8%;">Cantidad</th>
+                                        <th class="text-right" style="width: 12%;">Precio Unit.</th>
+                                        <th class="text-right" style="width: 7%;">Dto. (%)</th>
+                                        <th style="width: 12%;">Impuestos</th>
+                                        <th class="text-right" style="width: 15%;">Total</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -123,32 +95,32 @@
                                     <t t-set="total_con_iva" t-value="sum(l.importe_total for l in lineas_producto)"/>
                                     <t t-set="total_impuestos" t-value="total_con_iva - base_imponible"/>
                                     <tr>
-                                        <td colspan="6" style="border: none;"></td>
-                                        <td class="text-left" style="border: none; font-size: 11px;">Base imponible</td>
-                                        <td class="text-right" style="border: none; font-size: 11px; min-width: 100px;">
+                                        <td colspan="6" style="border: none; background: none;"></td>
+                                        <td style="border: none; background: none; font-size: 11px;">Base imponible</td>
+                                        <td class="text-right" style="border: none; background: none; font-size: 11px;">
                                             <span t-esc="'%.2f €' % base_imponible"/>
                                         </td>
                                     </tr>
                                     <t t-if="subtotal_descuento > 0">
                                         <tr>
-                                            <td colspan="6" style="border: none;"></td>
-                                            <td class="text-left" style="border: none; font-size: 11px;">Descuento</td>
-                                            <td class="text-right" style="border: none; font-size: 11px; min-width: 100px;">
+                                            <td colspan="6" style="border: none; background: none;"></td>
+                                            <td style="border: none; background: none; font-size: 11px;">Descuento</td>
+                                            <td class="text-right" style="border: none; background: none; font-size: 11px;">
                                                 <span t-esc="'-%.2f €' % subtotal_descuento"/>
                                             </td>
                                         </tr>
                                     </t>
                                     <tr>
-                                        <td colspan="6" style="border: none;"></td>
-                                        <td class="text-left" style="border: none; font-size: 11px;">Impuestos</td>
-                                        <td class="text-right" style="border: none; font-size: 11px; min-width: 100px;">
+                                        <td colspan="6" style="border: none; background: none;"></td>
+                                        <td style="border: none; background: none; font-size: 11px;">Impuestos</td>
+                                        <td class="text-right" style="border: none; background: none; font-size: 11px;">
                                             <span t-esc="'%.2f €' % total_impuestos"/>
                                         </td>
                                     </tr>
-                                    <tr style="border-top: 2px solid #2c3e50;">
-                                        <td colspan="6" style="border: none;"></td>
-                                        <td class="text-left" style="border: none; font-size: 16px; font-weight: bold;">Total</td>
-                                        <td class="text-right" style="border: none; font-size: 16px; font-weight: bold; min-width: 100px;">
+                                    <tr>
+                                        <td colspan="6" style="border: none; background: none;"></td>
+                                        <td style="border: none; background: none; font-size: 16px; font-weight: bold; border-top: 2px solid #2c3e50;">Total</td>
+                                        <td class="text-right" style="border: none; background: none; font-size: 16px; font-weight: bold; border-top: 2px solid #2c3e50;">
                                             <span t-esc="'%.2f €' % total_con_iva"/>
                                         </td>
                                     </tr>
@@ -161,73 +133,50 @@
         </t>
     </template>
 
-    <!-- Plantilla PV individual -->
     <template id="report_pv">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="pv">
                 <t t-call="web.external_layout">
                     <div class="page">
                         <style>
-                            .header .row .company_address { font-size: 16px !important; }
-                            .header img { max-height: 120px !important; max-width: 280px !important; }
                             .rother-header { margin-bottom: 24px; }
                             .rother-header h2 { color: #2c3e50; font-size: 22px; margin-bottom: 6px; }
                             .rother-header h3 { color: #555; font-size: 17px; margin-bottom: 6px; }
                             .rother-header p { color: #777; font-size: 14px; margin: 4px 0; }
-                            .rother-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+                            .rother-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
                             .rother-table thead tr { background-color: #2c3e50; color: white; }
-                            .rother-table thead th { padding: 12px 14px; text-align: left; font-weight: 600; }
+                            .rother-table thead th { padding: 8px 6px; text-align: left; font-weight: 600; }
                             .rother-table thead th.text-right { text-align: right; }
                             .rother-table tbody tr:nth-child(even) { background-color: #f9f9f9; }
-                            .rother-table tbody td { padding: 10px 14px; border-bottom: 1px solid #e0e0e0; }
+                            .rother-table tbody td { padding: 8px 6px; border-bottom: 1px solid #e0e0e0; }
                             .rother-table tbody td.text-right { text-align: right; }
+                            .rother-table tfoot tr { background-color: #ecf0f1; }
+                            .rother-table tfoot td { padding: 8px 6px; font-weight: bold; font-size: 13px; border-top: 2px solid #2c3e50; }
+                            .rother-table tfoot td.text-right { text-align: right; }
                         </style>
-                        <div class="page">
-                            <div class="row mb-4">
-                                <div class="col-6">
-                                    <div style="display: flex; align-items: flex-start;">
-                                        <t t-if="res_company.logo">
-                                            <img t-att-src="image_data_uri(res_company.logo)"
-                                            style="max-height: 70px; max-width: 150px; margin-right: 12px;"/>
-                                        </t>
-                                        <div style="font-size: 11px; line-height: 1.4;">
-                                            <strong t-esc="res_company.name"/>
-                                            <br/>
-                                            <t t-if="res_company.street"><span t-esc="res_company.street"/><br/></t>
-                                            <t t-if="res_company.zip or res_company.city">
-                                                <span t-esc="'%s %s' % (res_company.zip or '', res_company.city or '')"/><br/>
-                                            </t>
-                                            <t t-if="res_company.state_id"><span t-esc="res_company.state_id.name"/><br/></t>
-                                            <t t-if="res_company.country_id"><span t-esc="res_company.country_id.name"/></t>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-6 text-right">
-                                    <div class="rother-header">
-                                        <h2>Pedido Virtual: <span t-field="pv.referencia_gpv"/></h2>
-                                        <h3>Proveedor: <span t-field="pv.proveedor_id.name"/></h3>
-                                        <t t-if="pv.referencia_proveedor">
-                                            <p>Referencia Proveedor: <span t-field="pv.referencia_proveedor"/></p>
-                                        </t>
-                                        <t t-if="pv.llegada_prevista">
-                                            <p>Llegada Prevista: <span t-field="pv.llegada_prevista"/></p>
-                                        </t>
-                                    </div>
-                                </div>
-                            </div>
+
+                        <div class="rother-header">
+                            <h2>Pedido Virtual: <span t-field="pv.referencia_gpv"/></h2>
+                            <h3>Proveedor: <span t-field="pv.proveedor_id.name"/></h3>
+                            <t t-if="pv.referencia_proveedor">
+                                <p>Referencia Proveedor: <span t-field="pv.referencia_proveedor"/></p>
+                            </t>
+                            <t t-if="pv.llegada_prevista">
+                                <p>Llegada Prevista: <span t-field="pv.llegada_prevista"/></p>
+                            </t>
                         </div>
 
                         <table class="rother-table">
                             <thead>
                                 <tr>
-                                    <th>Referencia</th>
-                                    <th>Producto</th>
-                                    <th>Ref. Fab.</th>
-                                    <th class="text-right">Cantidad</th>
-                                    <th class="text-right">Precio Unit.</th>
-                                    <th class="text-right">Descuento (%)</th>
-                                    <th>Impuestos</th>
-                                    <th class="text-right">Total</th>
+                                    <th style="width: 12%;">Referencia</th>
+                                    <th style="width: 24%;">Producto</th>
+                                    <th style="width: 10%;">Ref. Fab.</th>
+                                    <th class="text-right" style="width: 8%;">Cantidad</th>
+                                    <th class="text-right" style="width: 12%;">Precio Unit.</th>
+                                    <th class="text-right" style="width: 7%;">Dto. (%)</th>
+                                    <th style="width: 12%;">Impuestos</th>
+                                    <th class="text-right" style="width: 15%;">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -238,19 +187,49 @@
                                             <td><span t-esc="linea.nombre or linea.product_id.name"/></td>
                                             <td><span t-esc="linea.product_id.x_Ref_fab or ''"/></td>
                                             <td class="text-right"><span t-esc="linea.cantidad"/></td>
-                                            <td class="text-right"><span t-esc="linea.precio_unitario"/></td>
+                                            <td class="text-right"><span t-esc="'%.2f €' % linea.precio_unitario"/></td>
                                             <td class="text-right"><span t-esc="linea.descuento"/></td>
                                             <td><span t-esc="', '.join(linea.taxes_id.mapped('name'))"/></td>
-                                            <td class="text-right"><span t-esc="linea.importe_total"/></td>
+                                            <td class="text-right"><span t-esc="'%.2f €' % linea.importe_total"/></td>
                                         </tr>
                                     </t>
                                 </t>
                             </tbody>
                             <tfoot>
+                                <t t-set="lineas_producto" t-value="[l for l in pv.linea_ids if not l.display_type]"/>
+                                <t t-set="subtotal" t-value="sum(l.cantidad * l.precio_unitario for l in lineas_producto)"/>
+                                <t t-set="subtotal_descuento" t-value="sum(l.cantidad * l.precio_unitario * (l.descuento / 100) for l in lineas_producto)"/>
+                                <t t-set="base_imponible" t-value="subtotal - subtotal_descuento"/>
+                                <t t-set="total_con_iva" t-value="sum(l.importe_total for l in lineas_producto)"/>
+                                <t t-set="total_impuestos" t-value="total_con_iva - base_imponible"/>
                                 <tr>
-                                    <td colspan="7" class="text-right">Total:</td>
-                                    <td class="text-right">
-                                        <span t-esc="sum(l.importe_total for l in pv.linea_ids if not l.display_type)"/>
+                                    <td colspan="6" style="border: none; background: none;"></td>
+                                    <td style="border: none; background: none; font-size: 11px;">Base imponible</td>
+                                    <td class="text-right" style="border: none; background: none; font-size: 11px;">
+                                        <span t-esc="'%.2f €' % base_imponible"/>
+                                    </td>
+                                </tr>
+                                <t t-if="subtotal_descuento > 0">
+                                    <tr>
+                                        <td colspan="6" style="border: none; background: none;"></td>
+                                        <td style="border: none; background: none; font-size: 11px;">Descuento</td>
+                                        <td class="text-right" style="border: none; background: none; font-size: 11px;">
+                                            <span t-esc="'-%.2f €' % subtotal_descuento"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <tr>
+                                    <td colspan="6" style="border: none; background: none;"></td>
+                                    <td style="border: none; background: none; font-size: 11px;">Impuestos</td>
+                                    <td class="text-right" style="border: none; background: none; font-size: 11px;">
+                                        <span t-esc="'%.2f €' % total_impuestos"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="6" style="border: none; background: none;"></td>
+                                    <td style="border: none; background: none; font-size: 16px; font-weight: bold; border-top: 2px solid #2c3e50;">Total</td>
+                                    <td class="text-right" style="border: none; background: none; font-size: 16px; font-weight: bold; border-top: 2px solid #2c3e50;">
+                                        <span t-esc="'%.2f €' % total_con_iva"/>
                                     </td>
                                 </tr>
                             </tfoot>

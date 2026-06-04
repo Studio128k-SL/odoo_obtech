@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="rother_paperformat_a4" model="report.paperformat">
+        <field name="name">Rother A4</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">60</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line">False</field>
+        <field name="header_spacing">45</field>
+        <field name="dpi">96</field>
+    </record>
+
     <record id="rother_product_report" model="ir.actions.report">
         <field name="name">Ficha de Producto Rother</field>
         <field name="model">product.template</field>
