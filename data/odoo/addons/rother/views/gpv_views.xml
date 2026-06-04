@@ -9,7 +9,7 @@
             <list string="Grupos de Compra">
                 <field name="name" string="ID del Grupo" width="33%"/>
                 <field name="fecha" string="Fecha" width="33%"/>
-                <field name="entregar_a_id" string="Entregar a" width="34%"/>
+                <field name="picking_type_id" string="Entregar a" width="34%"/>
             </list>
         </field>
     </record>
@@ -38,7 +38,7 @@
                     </div>
                     <group>
                         <field name="fecha" string="Fecha"/>
-                        <field name="entregar_a_id" string="Entregar a"/>
+                        <field name="picking_type_id" string="Entregar a"/>
                         <field name="currency_id" invisible="1"/>
                         <field name="importe_total" string="Importe Total" readonly="1" widget="monetary"
                             options="{'currency_field': 'currency_id'}"/>
@@ -213,25 +213,7 @@
     <!-- Submenú GPV -->
     <menuitem id="rother_menu_gpv"
             name="Grupos de Compra"
-            parent="rother_menu_root"
+            parent="purchase.menu_purchase_root"
             action="rother_gpv_action"
-            sequence="2" />
-
-    <!-- Menú Compras dentro de Rother -->
-    <menuitem id="rother_compras_menu"
-            name="Compras"
-            parent="rother_menu_root"
-            sequence="3"/>
-
-    <menuitem id="rother_menu_solicitudes"
-            name="Solicitudes de Presupuesto"
-            parent="rother_compras_menu"
-            action="purchase.purchase_rfq"
-            sequence="1"/>
-
-    <menuitem id="rother_menu_pedidos_compra"
-            name="Pedidos de Compra"
-            parent="rother_compras_menu"
-            action="purchase.purchase_form_action"
-            sequence="2"/>
+            sequence="0" />
 </odoo>

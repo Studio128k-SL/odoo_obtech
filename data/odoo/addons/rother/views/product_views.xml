@@ -45,4 +45,40 @@
             </xpath>
         </field>
     </record>
+
+    <!-- Herencia para el kanban del catálogo -->
+    <record id="rother_product_catalog_kanban_inherit" model="ir.ui.view">
+        <field name="name">rother.product.catalog.kanban.inherit</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_view_kanban_catalog"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='o_kanban_price']" position="before">
+                <div t-if ="record.x_Ref_fab.value">
+                    Ref. Fab: <field name="x_Ref_fab" />
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Herencias para poder buscar por Ref. Fab -->
+    <record id="rother_product_search_inherit" model="ir.ui.view">
+        <field name="name">rother.product.search.catalog.inherit</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_view_search_catalog"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="x_Ref_fab" string="Ref. Fabricante" filter_domain="[('x_Ref_fab', 'ilike', self)]"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="rother_product_template_search_inherit" model="ir.ui.view">
+        <field name="name">rother.product.template.search.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="x_Ref_fab" string="Ref. Fabricante" filter_domain="[('x_Ref_fab', 'ilike', self)]"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>

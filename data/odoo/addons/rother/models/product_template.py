@@ -21,3 +21,19 @@ class ProductTemplate(models.Model):
                 record.x_barcode_image = base64.b64encode(barcode_bytes).decode('utf-8')
             else:
                 record.x_barcode_image = False
+
+class ProductProduct(models.Model):
+    _inherit = 'product.product'
+
+    @api.model
+    def _name_search(self, name='', domain=None, operator='ilike', limit=None, order=None):
+        domain = domain or []
+        if name:
+            domain = ['|', '|', '|',
+                ('default_code', operator, name),
+                ('name', operator, name),
+                ('barcode', operator, name),
+                ('x_Ref_fab', operator, name),
+            ] + domain
+            return self._search(domain, limit=limit, order=order)
+        return super()._name_search(name, domain, operator, limit, order)

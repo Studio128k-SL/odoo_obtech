@@ -8,7 +8,7 @@ class RotherGPV(models.Model):
 
     name = fields.Char(string='Número', readonly=True, default='Nuevo')
     fecha = fields.Date(string='Fecha', default=fields.Date.today)
-    entregar_a_id = fields.Many2one('res.partner', string='Entregar a')
+    picking_type_id = fields.Many2one('stock.picking.type', string='Entregar a', domain=[('code', '=', 'incoming')])
     gpv_linea_ids = fields.One2many('rother.gpv.linea2', 'gpv_id', string='Líneas')
     pv_ids = fields.One2many('rother.pv', 'gpv_id', string='Pedidos Virtuales')
     currency_id = fields.Many2one('res.currency', string='Moneda', related='company_id.currency_id', store= True)
@@ -149,7 +149,7 @@ class RotherGPV(models.Model):
         return [('purchase_ok', '=', True)]
 
     def _is_readonly(self):
-        return True
+        return self.state == 'done'
 
     def _get_product_catalog_record_lines(self, product_ids, child_field=False, **kwargs):
         lines = self.gpv_linea_ids.filtered(
@@ -180,8 +180,6 @@ class RotherGPV(models.Model):
                 'ref_fabricante': product.x_Ref_fab or '',
             })
         return product.lst_price
-
-    # ── Write / Unlink ──
 
     def write(self, vals):
         result = super().write(vals)
@@ -293,11 +291,10 @@ class RotherGPVLinea2(models.Model):
     # Método para el catálogo de productos
     def _get_product_catalog_lines_data(self, parent_record=None, **kwargs):
         if not self:
-            return {'quantity': 0, 'readOnly': True}
+            return {'quantity': 0, 'price': 0, 'readOnly': True}
         return {
             'quantity': sum(self.mapped('cantidad')),
             'price': self[0].precio_unitario,
-            'readOnly': True,
             'productType': self[0].product_id.type,
         }
 
