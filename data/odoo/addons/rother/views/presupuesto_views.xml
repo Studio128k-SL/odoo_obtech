@@ -6,6 +6,7 @@
         <field name="model">rother.presupuesto</field>
         <field name="arch" type="xml">
             <list string="Presupuestos">
+                <field name="sequence" widget="handle"/>
                 <field name="name" string="Número"/>
                 <field name="fecha" string="Fecha"/>
                 <field name="importe_total" string="Importe Total"/>

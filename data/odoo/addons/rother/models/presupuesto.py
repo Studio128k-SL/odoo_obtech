@@ -3,11 +3,13 @@ from odoo import models, fields, api
 class RotherPresupuesto(models.Model):
     _name = 'rother.presupuesto'
     _description = 'Presupuesto Rother'
+    _order = 'sequence, id'
 
     name = fields.Char(string='Número', readonly=True, default='Nuevo')
     fecha = fields.Date(string='Fecha', default=fields.Date.today)
     linea_ids = fields.One2many('rother.presupuesto.linea', 'presupuesto_id', string='Líneas')
     importe_total = fields.Float(string='Importe Total', compute='_compute_importe_total', store=True)
+    sequence = fields.Integer(string = "Secuencia", default="1")
 
     @api.model_create_multi
     def create(self, vals_list):

@@ -81,7 +81,7 @@
                 <div class="label-container">
                     <div class="barcode-section">
                         <t t-if="o.barcode">
-                                <img t-att-src="'/report/barcode/Code128/' + o.barcode"/>                       
+                                <img t-att-src="'data:image/png;base64,' + o.x_barcode_image"/>                    
                         </t>
                         <div class="barcode-number">
                             <span t-out="o.x_Ref_fab"/>
