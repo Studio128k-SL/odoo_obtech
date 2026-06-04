@@ -31,12 +31,13 @@
     <!-- Template de la etiqueta -->
     <template id="report_label_dymo_rother">
         <t t-call="web.html_container">
+            <meta charset="UTF-8"/>
             <style>
                 body, html { margin: 2; padding: 0; }
                 .label-container { 
                     width: 79%; 
                     height: 100%; 
-                    padding: 1; 
+                    padding: 3px; 
                     display: flex; 
                     flex-direction: column;
                     justify-content: space-between;
@@ -54,13 +55,13 @@
                     font-weight: bold; 
                     text-align: left; 
                     overflow: hidden;  
-                    display: -webkit-box;
-                    -webkit-line-clamp: 2;
-                    -webkit-box-orient: vertical;
+                    max-height: 2.6em;
+                    line-height: 1.2em;
                     width: 100%; 
                     margin-top: 1mm;
                     margin-left: 5px;
-                    padding-right: 2px
+                    margin-right: 5px;
+                    padding-right: 2px;
                 }
                 .references { 
                     font-size: 10pt; 
@@ -88,7 +89,7 @@
                         </div>
                     </div>
                     <div class="product-name">
-                        <span t-field="o.name"/>
+                        <span t-esc="o.x_display_name_label"/>
                     </div>
                     <div class="references">
                         <span class="ref-left" t-field="o.default_code"/>

@@ -11,6 +11,11 @@ class ProductTemplate(models.Model):
         compute='_compute_barcode_image'
     )
 
+    x_display_name_label = fields.Char(
+        string='Nombre Etiqueta',
+        compute='_compute_display_name_label'
+    )
+
     @api.depends('barcode')
     def _compute_barcode_image(self):
         for record in self:
@@ -21,6 +26,15 @@ class ProductTemplate(models.Model):
                 record.x_barcode_image = base64.b64encode(barcode_bytes).decode('utf-8')
             else:
                 record.x_barcode_image = False
+
+    @api.depends('name')
+    def _compute_display_name_label(self):
+        for record in self:
+            if record.name and len(record.name) > 60:
+                record.x_display_name_label = record.name[:60] + '...'
+            else:
+                record.x_display_name_label = record.name or ''
+
 
 class ProductProduct(models.Model):
     _inherit = 'product.product'
