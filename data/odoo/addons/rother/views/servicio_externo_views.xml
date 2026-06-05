@@ -7,6 +7,9 @@
         <field name="model">rother.servicio.externo</field>
         <field name="arch" type="xml">
             <kanban class="o_kanban_mobile">
+                <field name="precio_total_sin_iva"/>
+                <field name="precio_total_con_iva"/>
+                <field name="currency_id"/>
                 <templates>
                     <t t-name="card">
                         <div class="o_kanban_image">
@@ -18,7 +21,10 @@
                                 <field name="proveedor_id"/>
                             </div>
                             <div>
-                                <field name="precio" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                Sin IVA: <field name="precio_total_sin_iva" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            </div>
+                            <div>
+                                Con IVA: <field name="precio_total_con_iva" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             </div>
                             <div class="text-muted">
                                 <field name="fecha_finalizacion"/>
@@ -26,11 +32,10 @@
                             <div class="text-muted" t-if="record.periodo_display.raw_value">
                                 <field name="periodo_display"/>
                             </div>
-                            <field name="currency_id" invisible="1"/>
                         </div>
                     </t>
                 </templates>
-            </kanban>           
+            </kanban>      
         </field>
     </record>
 
@@ -45,7 +50,8 @@
                 <field name="precio" string="Precio" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="fecha_inicio" string="Fecha de Inicio"/>
                 <field name="fecha_finalizacion" string="Fecha Finalización"/>
-                <field name="precio_total" string="Precio Total" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="precio_total_sin_iva" string="Total sin IVA" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="precio_total_con_iva" string="Total con IVA" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 <field name="currency_id" column_invisible="True"/>
             </list>
         </field>
@@ -120,8 +126,26 @@
                                 </list>
                             </field>
                             <group class="oe_subtotal_footer">
-                                <field name="precio_total" string="Precio Total (Base + Extras)"
+                                <field name="precio_total_sin_iva" string="Total sin IVA"
                                     widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="precio_total_con_iva" string="Total con IVA"
+                                    widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            </group>
+                        </page>
+                        <page string="Documentación" name="documentacion">
+                            <group>
+                                <field name="doc_soc" widget="binary" filename="nombre_doc_soc"/>
+                                <field name="nombre_doc_soc" invisible="1" />
+
+                                <field name="doc_edr" widget="binary" filename="nombre_doc_edr"/>
+                                <field name="nombre_doc_edr" invisible="1" />
+                            </group>
+                        </page>
+                        <page string="Pago" name="pago_servicio_extra">
+                            <group>
+                                <field name="forma_pago" string="Forma de Pago" />
+                                <field name="cuenta_origen" string="Cuenta de Origen" />
+                                <field name="cuenta_destino" string="Cuenta de Destino" />
                             </group>
                         </page>
                     </notebook>
@@ -142,8 +166,8 @@
                 <separator/>
                 <group expand="1" string="Agrupar por">
                     <filter string="Proveedor" name="group_proveedor" context="{'group_by': 'proveedor_id'}"/>
-                    <filter string="Servicio" name="group_servicio" context="{'group_by': 'name_display'}"/>
                     <filter string="Mes" name="group_mes" context="{'group_by': 'mes'}"/>
+                    <filter string="Servicio" name="group_servicio" context="{'group_by': 'name_display'}"/>
                 </group>
             </search>
         </field>
@@ -154,10 +178,24 @@
         <field name="name">rother.servicio.externo.report.graph</field>
         <field name="model">rother.servicio.externo.report</field>
         <field name="arch" type="xml">
-            <graph string="Balance Anual" type="bar" stacked="0">
-                <field name="name_display" type="row"/>
+            <graph string="Balance Anual" type="line" stacked="0">
+                <field name="name_display" type="col"/>
                 <field name="precio_total" type="measure"/>
             </graph>
+        </field>
+    </record>
+
+    <!-- Vista en tabla del balance -->
+    <record id="rother_servicio_externo_balance_pivot" model="ir.ui.view">
+        <field name="name">rother.servicio.externo.report.pivot</field>
+        <field name="model">rother.servicio.externo.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Balance Anual">
+                <field name="mes" type="row"/>
+                <field name="name_display" type="row"/>
+                <field name="proveedor_id" type="col"/>
+                <field name="precio_total" type="measure"/>
+            </pivot>
         </field>
     </record>
 
@@ -168,7 +206,7 @@
         <field name="view_mode">graph,pivot</field>
         <field name="view_id" ref="rother_servicio_externo_balance_view"/>
         <field name="search_view_id" ref="rother_servicio_externo_balance_search"/>
-        <field name="context">{'search_default_group_servicio': 1}</field>
+        <field name="context">{'search_default_group_mes': 1, 'search_default_group_servicio': 1}</field>
     </record>
 
     <!-- Action de servicios -->
