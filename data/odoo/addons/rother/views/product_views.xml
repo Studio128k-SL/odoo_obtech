@@ -31,6 +31,13 @@
                     </group>
                 </page>
             </xpath>
+
+            <xpath expr="//button[@name = 'action_open_label_layout']" position="before">
+                <button name="action_realizar_traslado"
+                        string="Realizar traslado"
+                        type="object"
+                        class="btn-secondary" />
+            </xpath>
         </field>
     </record>
 
@@ -87,4 +94,25 @@
         </field>
     </record>
 
+    <record id="rother_stock_picking_traslado_form" model="ir.ui.view">
+        <field name="name">rother.stock.picking.traslado.form</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <field name="allowed_location_ids" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='location_dest_id']" position="before">
+                <field name="location_id"
+                    domain="[('id', 'in', allowed_location_ids)]"
+                    invisible="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='location_id'][last()]" position="attributes">
+                <attribute name="domain">[('id', 'in', allowed_location_ids)]</attribute>
+            </xpath>
+        </field>
+    </record>
 </odoo>
