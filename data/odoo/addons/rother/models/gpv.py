@@ -19,6 +19,12 @@ class RotherGPV(models.Model):
         ('done', 'Hecho'),
     ], string='Estado', default='draft')
 
+    mostrar_alerta_completa = fields.Boolean(string="Mostrar mensaje completo", default=False)
+
+    def toggle_alerta(self):
+        for record in self:
+            record.mostrar_alerta_completa = not record.mostrar_alerta_completa
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -440,16 +446,22 @@ class RotherPVLinea(models.Model):
     precio_unitario = fields.Float(string='Precio Unitario')
     taxes_id = fields.Many2many('account.tax', string='Impuestos')
     descuento = fields.Float(string='Descuento (%)', default=0.0)
+
     # Campo numérico para cálculos internos y PDF
     importe_total = fields.Float(string='Importe Total')
+
     # Campo texto para mostrar el desglose en la vista
     importe_total_display = fields.Char(string='Total', compute='_compute_importe_total_display')
+
     seccion_nombre = fields.Char(string='Proyecto')
     display_type = fields.Selection([
         ('line_section', 'Sección'),
         ('line_note', 'Nota'),
     ], default=False)
+
     currency_id = fields.Many2one('res.currency', string='Moneda', related='pv_id.gpv_id.company_id.currency_id', store=True)
+
+    
 
     @api.depends('cantidad', 'precio_unitario', 'taxes_id', 'descuento', 'display_type')
     def _compute_importe_total_display(self):
