@@ -23,10 +23,10 @@ class RotherServicioExterno(models.Model):
     cuenta_origen=fields.Char(string="Cuenta de origen", tracking=True)
     cuenta_destino=fields.Char(string="Cuenta de destino", tracking=True)
 
-    doc_soc = fields.Binary(string = 'Documento SOC' , attachment=True)
-    nombre_doc_soc = fields.Char(string='Documento SOC del servicio')
-    doc_edr = fields.Binary(string = 'Documento EDR' , attachment=True)
-    nombre_doc_edr = fields.Char(string='Documento EDR del servicio')
+    doc_contrato = fields.Binary(string = 'Contrato del Servicio' , attachment=True)
+    nombre_doc_contrato = fields.Char(string='Documento del contrato del servicio')
+    doc_factura = fields.Binary(string = 'Factura del Servicio' , attachment=True)
+    nombre_doc_factura = fields.Char(string='Documento con factura del servicio')
 
     fecha_finalizacion = fields.Date(
         string='Fecha de Finalización',
@@ -165,6 +165,9 @@ class ServicioExternoReport(models.Model):
         ('07', 'Julio'), ('08', 'Agosto'), ('09', 'Septiembre'),
         ('10', 'Octubre'), ('11', 'Noviembre'), ('12', 'Diciembre'),
     ], string='Mes', readonly=True)
+
+    anio = fields.Char(string="Año", readonly=True)
+
     tipo = fields.Selection([
         ('inicio', 'Contratación'),
         ('renovacion', 'Renovación'),
@@ -181,10 +184,15 @@ class ServicioExternoReport(models.Model):
                     s.proveedor_id,
                     s.precio_total_sin_iva AS precio_total,
                     TO_CHAR(s.fecha_inicio, 'MM') AS mes,
+                    TO_CHAR(s.fecha_inicio, 'YYYY') AS anio,
                     'inicio' AS tipo
                 FROM rother_servicio_externo s
                 LEFT JOIN res_partner p ON p.id = s.proveedor_id
                 WHERE s.fecha_inicio IS NOT NULL
+                AND (
+                    s.fecha_finalizacion IS NULL
+                    OR TO_CHAR(s.fecha_inicio, 'MM-YYYY') != TO_CHAR(s.fecha_finalizacion, 'MM-YYYY')            
+                )
 
                 UNION ALL
 
@@ -195,6 +203,7 @@ class ServicioExternoReport(models.Model):
                     s.proveedor_id,
                     s.precio_total_sin_iva AS precio_total,
                     TO_CHAR(s.fecha_finalizacion, 'MM') AS mes,
+                    TO_CHAR(s.fecha_finalizacion, 'YYYY') AS anio,
                     'renovacion' AS tipo
                 FROM rother_servicio_externo s
                 LEFT JOIN res_partner p ON p.id = s.proveedor_id
@@ -209,6 +218,7 @@ class ServicioExternoReport(models.Model):
                     s.proveedor_id,
                     0 AS precio_total,
                     LPAD(m.n::text, 2, '0') AS mes,
+                    TO_CHAR(CURRENT_DATE, 'YYYY') AS anio,
                     'placeholder' AS tipo
                 FROM generate_series(1, 12) AS m(n)
                 CROSS JOIN rother_servicio_externo s

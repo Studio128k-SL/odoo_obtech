@@ -134,11 +134,11 @@
                         </page>
                         <page string="Documentación" name="documentacion">
                             <group>
-                                <field name="doc_soc" widget="binary" filename="nombre_doc_soc"/>
-                                <field name="nombre_doc_soc" invisible="1" />
+                                <field name="doc_contrato" widget="binary" filename="nombre_doc_contrato"/>
+                                <field name="nombre_doc_contrato" invisible="1" />
 
-                                <field name="doc_edr" widget="binary" filename="nombre_doc_edr"/>
-                                <field name="nombre_doc_edr" invisible="1" />
+                                <field name="doc_factura" widget="binary" filename="nombre_doc_factura"/>
+                                <field name="nombre_doc_factura" invisible="1" />
                             </group>
                         </page>
                         <page string="Pago" name="pago_servicio_extra">
@@ -164,8 +164,13 @@
                 <filter string="Contrataciones" name="filter_inicio" domain="[('tipo', '=', 'inicio')]"/>
                 <filter string="Renovaciones" name="filter_renovacion" domain="[('tipo', '=', 'renovacion')]"/>
                 <separator/>
+                <filter string="Este año" name="filter_anio_actual"
+                        domain="[('anio', '=', context_today().strftime('%Y'))]"/>
+
+                <separator/>
                 <group expand="1" string="Agrupar por">
                     <filter string="Proveedor" name="group_proveedor" context="{'group_by': 'proveedor_id'}"/>
+                    <filter string="Año" name="group_anio" context="{'group_by': 'anio'}"/>
                     <filter string="Mes" name="group_mes" context="{'group_by': 'mes'}"/>
                     <filter string="Servicio" name="group_servicio" context="{'group_by': 'name_display'}"/>
                 </group>
@@ -206,7 +211,11 @@
         <field name="view_mode">graph,pivot</field>
         <field name="view_id" ref="rother_servicio_externo_balance_view"/>
         <field name="search_view_id" ref="rother_servicio_externo_balance_search"/>
-        <field name="context">{'search_default_group_mes': 1, 'search_default_group_servicio': 1}</field>
+        <field name="context">{
+            'search_default_filter_anio_actual': 1,
+            'search_default_group_mes': 1, 
+            'search_default_group_servicio': 1
+        }</field>
     </record>
 
     <!-- Action de servicios -->
