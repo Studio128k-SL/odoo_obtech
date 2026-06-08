@@ -7,6 +7,8 @@ class RotherServicioExterno(models.Model):
     _description= 'Servicios Externos'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
+    mostrar_alerta_completa = fields.Boolean(string='Mostrar mensaje completo', default=False)
+
     name = fields.Char(string='Nombre del Servicio', required=True, tracking=True)
     descripcion = fields.Text(string='Descripción', widget='text')
     imagen = fields.Binary(string='Imagen')
@@ -23,10 +25,16 @@ class RotherServicioExterno(models.Model):
     cuenta_origen=fields.Char(string="Cuenta de origen", tracking=True)
     cuenta_destino=fields.Char(string="Cuenta de destino", tracking=True)
 
-    doc_contrato = fields.Binary(string = 'Contrato del Servicio' , attachment=True)
-    nombre_doc_contrato = fields.Char(string='Documento del contrato del servicio')
-    doc_factura = fields.Binary(string = 'Factura del Servicio' , attachment=True)
-    nombre_doc_factura = fields.Char(string='Documento con factura del servicio')
+    doc_archivo = fields.Binary(string = 'Archivo relacionado al Servicio' , attachment=True)
+    nombre_doc_archivo = fields.Char(string='Documento relacionado con el Servicio')
+
+    doc_archivo_ids = fields.Many2many(
+        'ir.attachment',
+        'tu_modelo_doc_archivo_rel',
+        'record_id',
+        'attachment_id',
+        string='Archivos del Servicio'
+    )
 
     fecha_finalizacion = fields.Date(
         string='Fecha de Finalización',
@@ -54,6 +62,10 @@ class RotherServicioExterno(models.Model):
         compute='_compute_precios_iva',
         store=True
     )
+
+    def toggle_alerta(self):
+        for record in self:
+            record.mostrar_alerta_completa = not record.mostrar_alerta_completa
 
     @api.depends('precio', 'extra_ids.precio', 'taxes_id')
     def _compute_precios_iva(self):

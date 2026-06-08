@@ -71,16 +71,31 @@
                 </header>
                 <sheet>
                     <div class="alert alert-info" role="alert" style="margin-bottom:16px;">
-                        <p><b>FUNCIONAMIENTO</b></p>
-                        <ul>
-                            <li>Introduce la <b>Fecha de Inicio</b> y el <b>Periodo de Renovación</b> (años, meses y/o días).
-                                La fecha de finalización se calculará automáticamente.</li>
-                            <li>Puedes combinar los tres campos: por ejemplo, 1 año, 3 meses y 10 días.</li>
-                            <li>Pulsa <b>«Guardar»</b> para que se guarden los cambios solamente. </li>
-                            <li>Pulsa <b>«Renovar Servicio»</b> para extender la suscripción otro periodo completo
-                                a partir de la fecha de finalización actual.</li>
-                            <li>Los <b>Servicios Extra</b> se suman al precio base para obtener el precio total.</li>
-                        </ul>
+                        <div>
+                            <strong>FUNCIONAMIENTO</strong>
+                            <button name="toggle_alerta"
+                                    type="object"
+                                    string="Ver más"
+                                    class="btn btn-link p-0 ms-2"
+                                    invisible="mostrar_alerta_completa" />
+                            <button name="toggle_alerta"
+                                    type="object"
+                                    string="Ver menos"
+                                    class="btn btn-link p-0 ms-2"
+                                    invisible="not mostrar_alerta_completa" />
+                        </div>   
+
+                        <div invisible="not mostrar_alerta_completa">      
+                            <ul>
+                                <li>Introduce la <b>Fecha de Inicio</b> y el <b>Periodo de Renovación</b> (años, meses y/o días).
+                                    La fecha de finalización se calculará automáticamente.</li>
+                                <li>Puedes combinar los tres campos: por ejemplo, 1 año, 3 meses y 10 días.</li>
+                                <li>Pulsa <b>«Guardar»</b> para que se guarden los cambios solamente. </li>
+                                <li>Pulsa <b>«Renovar Servicio»</b> para extender la suscripción otro periodo completo
+                                    a partir de la fecha de finalización actual.</li>
+                                <li>Los <b>Servicios Extra</b> se suman al precio base para obtener el precio total.</li>
+                            </ul>
+                        </div>
                     </div>
 
                     <field name="imagen" widget="image" class="oe_avatar" options="{'size': [128, 128]}"/>
@@ -134,11 +149,7 @@
                         </page>
                         <page string="Documentación" name="documentacion">
                             <group>
-                                <field name="doc_contrato" widget="binary" filename="nombre_doc_contrato"/>
-                                <field name="nombre_doc_contrato" invisible="1" />
-
-                                <field name="doc_factura" widget="binary" filename="nombre_doc_factura"/>
-                                <field name="nombre_doc_factura" invisible="1" />
+                                <field name="doc_archivo_ids" widget="many2many_binary"/>
                             </group>
                         </page>
                         <page string="Pago" name="pago_servicio_extra">
