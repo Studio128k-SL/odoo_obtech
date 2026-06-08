@@ -5,7 +5,7 @@
     'summary': 'Módulo de Rother',
     'author': 'Rother Industries & Technologies',
     'license': 'LGPL-3',
-    'depends': ['product', 'stock', 'purchase', 'sale', 'mail', 'project'],
+    'depends': ['product', 'stock', 'purchase', 'sale', 'mail', 'project', 'maintenance'],
     'data': [
         'security/ir.model.access.csv',
         'data/sequences.xml',
@@ -20,7 +20,8 @@
         'views/product_views.xml',
         'views/presupuesto_views.xml',
         'views/stock_views.xml',
-        'views/servicio_externo_views.xml'
+        'views/servicio_externo_views.xml',
+        'views/maintenance_equipment_views.xml'
     ],
     'assets': {
         'web.assets_backend': [
