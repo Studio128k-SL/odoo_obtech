@@ -21,7 +21,12 @@ class RotherServicioExterno(models.Model):
     periodo_meses = fields.Integer(string='Meses', default=0)
     periodo_dias = fields.Integer(string='Días', default=0)
 
-    forma_pago = fields.Char(string="Forma de pago", tracking=True)
+    forma_pago = fields.Selection([
+        ('tarjeta', 'Tarjeta'),
+        ('transferencia', 'Transferencia bancaria'),
+    ], string="Forma de pago", tracking=True, default = 'tarjeta', required=True)
+
+    tarjeta_ultimos_4 = fields.Char(string="Últimos 4 dígitos", size=4, tracking=True)
     cuenta_origen=fields.Char(string="Cuenta de origen", tracking=True)
     cuenta_destino=fields.Char(string="Cuenta de destino", tracking=True)
 

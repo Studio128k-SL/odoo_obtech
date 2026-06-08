@@ -154,9 +154,20 @@
                         </page>
                         <page string="Pago" name="pago_servicio_extra">
                             <group>
-                                <field name="forma_pago" string="Forma de Pago" />
-                                <field name="cuenta_origen" string="Cuenta de Origen" />
-                                <field name="cuenta_destino" string="Cuenta de Destino" />
+                                <field name="forma_pago" string="Forma de Pago"/>
+
+                                <field name="tarjeta_ultimos_4"
+                                    string="Últimos 4 dígitos de la tarjeta"
+                                    invisible="forma_pago != 'tarjeta'"
+                                    required="forma_pago == 'tarjeta'" />
+                                
+                                <field name="cuenta_origen" string="Cuenta de Origen"
+                                    invisible = "forma_pago != 'transferencia'"
+                                    required = "forma_pago == 'transferencia'" />
+
+                                <field name="cuenta_destino" string="Cuenta de Destino" 
+                                    invisible = "forma_pago != 'transferencia'"
+                                    required = "forma_pago == 'transferencia'"/>
                             </group>
                         </page>
                     </notebook>
