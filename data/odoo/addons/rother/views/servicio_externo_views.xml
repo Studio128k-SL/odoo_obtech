@@ -35,7 +35,7 @@
                         </div>
                     </t>
                 </templates>
-            </kanban>      
+            </kanban>
         </field>
     </record>
 
@@ -83,16 +83,14 @@
                                     string="Ver menos"
                                     class="btn btn-link p-0 ms-2"
                                     invisible="not mostrar_alerta_completa" />
-                        </div>   
+                        </div>
 
-                        <div invisible="not mostrar_alerta_completa">      
+                        <div invisible="not mostrar_alerta_completa">
                             <ul>
-                                <li>Introduce la <b>Fecha de Inicio</b> y el <b>Periodo de Renovación</b> (años, meses y/o días).
-                                    La fecha de finalización se calculará automáticamente.</li>
+                                <li>Introduce la <b>Fecha de Inicio</b> y el <b>Periodo de Renovación</b> (años, meses y/o días). La fecha de finalización se calculará automáticamente.</li>
                                 <li>Puedes combinar los tres campos: por ejemplo, 1 año, 3 meses y 10 días.</li>
-                                <li>Pulsa <b>«Guardar»</b> para que se guarden los cambios solamente. </li>
-                                <li>Pulsa <b>«Renovar Servicio»</b> para extender la suscripción otro periodo completo
-                                    a partir de la fecha de finalización actual.</li>
+                                <li>Pulsa <b>«Guardar»</b> para que se guarden los cambios solamente.</li>
+                                <li>Pulsa <b>«Renovar Servicio»</b> para extender la suscripción otro periodo completo a partir de la fecha de finalización actual.</li>
                                 <li>Los <b>Servicios Extra</b> se suman al precio base para obtener el precio total.</li>
                             </ul>
                         </div>
@@ -110,8 +108,7 @@
                             <group>
                                 <group>
                                     <field name="proveedor_id" string="Proveedor"/>
-                                    <field name="precio" string="Precio"
-                                        widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="precio" string="Precio" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                                     <field name="taxes_id" string="Impuestos" widget="many2many_tags"/>
                                 </group>
                                 <group>
@@ -132,6 +129,7 @@
                             <separator string="Descripción"/>
                             <field name="descripcion" placeholder="Descripción del servicio..."/>
                         </page>
+
                         <page string="Servicios Extra" name="servicios_extra">
                             <field name="extra_ids">
                                 <list editable="bottom" string="Servicios Extra">
@@ -141,33 +139,30 @@
                                 </list>
                             </field>
                             <group class="oe_subtotal_footer">
-                                <field name="precio_total_sin_iva" string="Total sin IVA"
-                                    widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                                <field name="precio_total_con_iva" string="Total con IVA"
-                                    widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="precio_total_sin_iva" string="Total sin IVA" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                <field name="precio_total_con_iva" string="Total con IVA" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                             </group>
                         </page>
+
                         <page string="Documentación" name="documentacion">
                             <group>
                                 <field name="doc_archivo_ids" widget="many2many_binary"/>
                             </group>
                         </page>
+
                         <page string="Pago" name="pago_servicio_extra">
                             <group>
                                 <field name="forma_pago" string="Forma de Pago"/>
-
                                 <field name="tarjeta_ultimos_4"
                                     string="Últimos 4 dígitos de la tarjeta"
                                     invisible="forma_pago != 'tarjeta'"
                                     required="forma_pago == 'tarjeta'" />
-                                
                                 <field name="cuenta_origen" string="Cuenta de Origen"
-                                    invisible = "forma_pago != 'transferencia'"
-                                    required = "forma_pago == 'transferencia'" />
-
-                                <field name="cuenta_destino" string="Cuenta de Destino" 
-                                    invisible = "forma_pago != 'transferencia'"
-                                    required = "forma_pago == 'transferencia'"/>
+                                    invisible="forma_pago != 'transferencia'"
+                                    required="forma_pago == 'transferencia'" />
+                                <field name="cuenta_destino" string="Cuenta de Destino"
+                                    invisible="forma_pago != 'transferencia'"
+                                    required="forma_pago == 'transferencia'"/>
                             </group>
                         </page>
                     </notebook>
@@ -197,6 +192,29 @@
                     <filter string="Servicio" name="group_servicio" context="{'group_by': 'name_display'}"/>
                 </group>
             </search>
+        </field>
+    </record>
+
+    <!-- Vista lista del balance -->
+    <record id="rother_servicio_externo_balance_tree" model="ir.ui.view">
+        <field name="name">rother.servicio.externo.report.list</field>
+        <field name="model">rother.servicio.externo.report</field>
+        <field name="arch" type="xml">
+            <list string="Balance Anual">
+                <header>
+                    <button name="action_imprimir_balance_pdf"
+                            type="object"
+                            string="Imprimir PDF"
+                            class="btn-primary"
+                            icon="fa-print"/>
+                </header>
+                <field name="mes" string="Mes"/>
+                <field name="anio" string="Año"/>
+                <field name="name_display" string="Servicio"/>
+                <field name="proveedor_id" string="Proveedor"/>
+                <field name="tipo" string="Tipo"/>
+                <field name="precio_total" string="Precio Total"/>
+            </list>
         </field>
     </record>
 
@@ -230,12 +248,12 @@
     <record id="rother_balance_servicios_action" model="ir.actions.act_window">
         <field name="name">Balance</field>
         <field name="res_model">rother.servicio.externo.report</field>
-        <field name="view_mode">graph,pivot</field>
+        <field name="view_mode">graph,pivot,list</field>
         <field name="view_id" ref="rother_servicio_externo_balance_view"/>
         <field name="search_view_id" ref="rother_servicio_externo_balance_search"/>
         <field name="context">{
             'search_default_filter_anio_actual': 1,
-            'search_default_group_mes': 1, 
+            'search_default_group_mes': 1,
             'search_default_group_servicio': 1
         }</field>
     </record>
@@ -248,14 +266,14 @@
     </record>
 
     <!-- Menús -->
-    <menuitem id="rother_menu_servicios_externos" 
-            name="Servicios" 
+    <menuitem id="rother_menu_servicios_externos"
+            name="Servicios"
             sequence="100"/>
 
-    <menuitem id="rother_menu_servicios_list" 
-            name="Servicios" 
-            parent="rother_menu_servicios_externos" 
-            action="rother_servicio_externo_action" 
+    <menuitem id="rother_menu_servicios_list"
+            name="Servicios"
+            parent="rother_menu_servicios_externos"
+            action="rother_servicio_externo_action"
             sequence="1"/>
 
     <menuitem id="rother_menu_balance"
@@ -263,4 +281,5 @@
             parent="rother_menu_servicios_externos"
             action="rother_balance_servicios_action"
             sequence="2"/>
+
 </odoo>

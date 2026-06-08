@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_balance_servicios_pdf" model="ir.actions.report">
+        <field name="name">Balance Servicios PDF</field>
+        <field name="model">rother.servicio.externo</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">rother.report_balance_servicios_pdf</field>
+        <field name="report_file">rother.report_balance_servicios_pdf</field>
+        <field name="binding_model_id" ref="model_rother_servicio_externo"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_balance_servicios_pdf">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <div class="page">
+                    <style>
+                        .page {
+                            padding-top: 95px;
+                        }
+
+                        .o_page_title {
+                            margin: 0 0 14px 0;
+                            font-size: 18px;
+                            font-weight: 700;
+                            color: #1f3fb7;
+                            line-height: 1.2;
+                        }
+
+                        .o_balance_table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            table-layout: fixed;
+                            font-size: 10px;
+                            margin-top: 6px;
+                        }
+
+                        .o_balance_table thead th {
+                            background-color: #f4f6f8;
+                            border: 1px solid #d8dee6;
+                            padding: 6px 5px;
+                            text-align: left;
+                            font-weight: 600;
+                            color: #374151;
+                            white-space: normal;
+                            word-break: break-word;
+                            line-height: 1.2;
+                        }
+
+                        .o_balance_table tbody td {
+                            border: 1px solid #e5e7eb;
+                            padding: 6px 5px;
+                            vertical-align: middle;
+                            white-space: normal;
+                            word-break: break-word;
+                            overflow-wrap: break-word;
+                            line-height: 1.25;
+                        }
+
+                        .o_balance_table tbody tr:nth-child(even) {
+                            background-color: #fafafa;
+                        }
+
+                        .text-center {
+                            text-align: center;
+                        }
+
+                        .text-end {
+                            text-align: right;
+                        }
+
+                        .col-servicio {
+                            width: 22%;
+                        }
+
+                        .col-proveedor {
+                            width: 24%;
+                        }
+
+                        .col-fecha {
+                            width: 12%;
+                        }
+
+                        .col-periodo {
+                            width: 16%;
+                        }
+
+                        .col-precio {
+                            width: 14%;
+                        }
+
+                        .precio-nowrap {
+                            white-space: nowrap !important;
+                            word-break: keep-all !important;
+                        }
+                    </style>
+
+                    <h2 class="o_page_title">Balance de los Servicios</h2>
+
+                    <table class="o_balance_table">
+                        <thead>
+                            <tr>
+                                <th class="col-servicio">Servicio</th>
+                                <th class="col-proveedor">Proveedor</th>
+                                <th class="col-fecha text-center">Fecha de inicio</th>
+                                <th class="col-fecha text-center">Fecha de finalización</th>
+                                <th class="col-periodo">Periodo de renovación</th>
+                                <th class="col-precio text-end">Precio renovación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs" t-as="o">
+                                <tr>
+                                    <td>
+                                        <span t-esc="o.name or ''"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="o.proveedor_id.name or ''"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="o.fecha_inicio"/>
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-field="o.fecha_finalizacion"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="o.periodo_display or '-'"/>
+                                    </td>
+                                    <td class="text-end precio-nowrap">
+                                        <span t-field="o.precio_total_con_iva"
+                                            t-options='{"widget": "monetary", "display_currency": o.currency_id}'/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template> 
+</odoo>

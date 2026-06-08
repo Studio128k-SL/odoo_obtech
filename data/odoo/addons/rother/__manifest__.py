@@ -14,6 +14,7 @@
         'report/report_template.xml',
         'report/report_label_dymo.xml',
         'report/gpv_report.xml',
+        'report/balance_servicios_report.xml',
         'views/gpv_views.xml',
         'views/product_label_wizard_views.xml',
         'views/product_views.xml',

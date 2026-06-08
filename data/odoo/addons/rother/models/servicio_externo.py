@@ -2,9 +2,10 @@ from odoo import models, fields, api, tools
 from markupsafe import Markup
 from dateutil.relativedelta import relativedelta
 
+
 class RotherServicioExterno(models.Model):
     _name = 'rother.servicio.externo'
-    _description= 'Servicios Externos'
+    _description = 'Servicios Externos'
     _inherit = ['mail.thread', 'mail.activity.mixin']
 
     mostrar_alerta_completa = fields.Boolean(string='Mostrar mensaje completo', default=False)
@@ -24,13 +25,13 @@ class RotherServicioExterno(models.Model):
     forma_pago = fields.Selection([
         ('tarjeta', 'Tarjeta'),
         ('transferencia', 'Transferencia bancaria'),
-    ], string="Forma de pago", tracking=True, default = 'tarjeta', required=True)
+    ], string="Forma de pago", tracking=True, default='tarjeta', required=True)
 
     tarjeta_ultimos_4 = fields.Char(string="Últimos 4 dígitos", size=4, tracking=True)
-    cuenta_origen=fields.Char(string="Cuenta de origen", tracking=True)
-    cuenta_destino=fields.Char(string="Cuenta de destino", tracking=True)
+    cuenta_origen = fields.Char(string="Cuenta de origen", tracking=True)
+    cuenta_destino = fields.Char(string="Cuenta de destino", tracking=True)
 
-    doc_archivo = fields.Binary(string = 'Archivo relacionado al Servicio' , attachment=True)
+    doc_archivo = fields.Binary(string='Archivo relacionado al Servicio', attachment=True)
     nombre_doc_archivo = fields.Char(string='Documento relacionado con el Servicio')
 
     doc_archivo_ids = fields.Many2many(
@@ -47,21 +48,26 @@ class RotherServicioExterno(models.Model):
         store=True,
         readonly=True,
     )
+
     extra_ids = fields.One2many('rother.servicio.externo.linea', 'servicio_id', string='Servicios Extra')
+
     currency_id = fields.Many2one(
         'res.currency',
         string='Moneda',
         default=lambda self: self.env.company.currency_id,
     )
+
     periodo_display = fields.Char(
         string='Periodo de Renovación',
         compute='_compute_periodo_display',
     )
+
     precio_total_sin_iva = fields.Float(
         string='Total sin IVA',
         compute='_compute_precios_iva',
         store=True
     )
+
     precio_total_con_iva = fields.Float(
         string='Total con IVA',
         compute='_compute_precios_iva',
@@ -121,7 +127,9 @@ class RotherServicioExterno(models.Model):
 
         for servicio in servicios:
             dias = (servicio.fecha_finalizacion - hoy).days
-            mensaje = Markup("⚠️ El servicio <b>%s</b> finaliza en <b>%s días</b> (%s).") % (servicio.name, dias, servicio.fecha_finalizacion)
+            mensaje = Markup("⚠️ El servicio <b>%s</b> finaliza en <b>%s días</b> (%s).") % (
+                servicio.name, dias, servicio.fecha_finalizacion
+            )
             servicio.message_post(
                 body=mensaje,
                 subject=f"Aviso: {servicio.name} próximo a finalización",
@@ -172,10 +180,12 @@ class ServicioExternoReport(models.Model):
     _description = 'Análisis Gastos Servicios'
     _auto = False
 
+    servicio_id = fields.Many2one('rother.servicio.externo', string='Servicio real', readonly=True)
     name = fields.Char(string='Servicio', readonly=True)
     name_display = fields.Char(string='Servicio (Proveedor)', readonly=True)
     proveedor_id = fields.Many2one('res.partner', string='Proveedor', readonly=True)
     precio_total = fields.Float(string='Precio Total', readonly=True)
+
     mes = fields.Selection([
         ('01', 'Enero'), ('02', 'Febrero'), ('03', 'Marzo'),
         ('04', 'Abril'), ('05', 'Mayo'), ('06', 'Junio'),
@@ -188,7 +198,14 @@ class ServicioExternoReport(models.Model):
     tipo = fields.Selection([
         ('inicio', 'Contratación'),
         ('renovacion', 'Renovación'),
+        ('placeholder', 'Placeholder'),
     ], string='Tipo', readonly=True)
+
+    def action_imprimir_balance_pdf(self):
+        servicios = self.mapped('servicio_id')
+        if not servicios:
+            servicios = self.env['rother.servicio.externo'].search([])
+        return self.env.ref('rother.action_report_balance_servicios_pdf').report_action(servicios)
 
     def init(self):
         tools.drop_view_if_exists(self.env.cr, self._table)
@@ -196,8 +213,9 @@ class ServicioExternoReport(models.Model):
             CREATE OR REPLACE VIEW %s AS (
                 SELECT
                     s.id * 2 AS id,
+                    s.id AS servicio_id,
                     s.name,
-                    s.name || ' (' || p.name || ')' AS name_display,
+                    s.name || ' (' || COALESCE(p.name, '') || ')' AS name_display,
                     s.proveedor_id,
                     s.precio_total_sin_iva AS precio_total,
                     TO_CHAR(s.fecha_inicio, 'MM') AS mes,
@@ -206,17 +224,18 @@ class ServicioExternoReport(models.Model):
                 FROM rother_servicio_externo s
                 LEFT JOIN res_partner p ON p.id = s.proveedor_id
                 WHERE s.fecha_inicio IS NOT NULL
-                AND (
-                    s.fecha_finalizacion IS NULL
-                    OR TO_CHAR(s.fecha_inicio, 'MM-YYYY') != TO_CHAR(s.fecha_finalizacion, 'MM-YYYY')            
-                )
+                  AND (
+                        s.fecha_finalizacion IS NULL
+                        OR TO_CHAR(s.fecha_inicio, 'MM-YYYY') != TO_CHAR(s.fecha_finalizacion, 'MM-YYYY')
+                  )
 
                 UNION ALL
 
                 SELECT
                     s.id * 2 + 1 AS id,
+                    s.id AS servicio_id,
                     s.name,
-                    s.name || ' (' || p.name || ')' AS name_display,
+                    s.name || ' (' || COALESCE(p.name, '') || ')' AS name_display,
                     s.proveedor_id,
                     s.precio_total_sin_iva AS precio_total,
                     TO_CHAR(s.fecha_finalizacion, 'MM') AS mes,
@@ -230,8 +249,9 @@ class ServicioExternoReport(models.Model):
 
                 SELECT
                     -(m.n * 1000 + s.id) AS id,
+                    s.id AS servicio_id,
                     s.name,
-                    s.name || ' (' || p.name || ')' AS name_display,
+                    s.name || ' (' || COALESCE(p.name, '') || ')' AS name_display,
                     s.proveedor_id,
                     0 AS precio_total,
                     LPAD(m.n::text, 2, '0') AS mes,
@@ -241,12 +261,13 @@ class ServicioExternoReport(models.Model):
                 CROSS JOIN rother_servicio_externo s
                 LEFT JOIN res_partner p ON p.id = s.proveedor_id
                 WHERE NOT EXISTS (
-                    SELECT 1 FROM rother_servicio_externo s2
+                    SELECT 1
+                    FROM rother_servicio_externo s2
                     WHERE s2.id = s.id
-                    AND (
-                        TO_CHAR(s2.fecha_inicio, 'MM') = LPAD(m.n::text, 2, '0')
-                        OR TO_CHAR(s2.fecha_finalizacion, 'MM') = LPAD(m.n::text, 2, '0')
-                    )
+                      AND (
+                            TO_CHAR(s2.fecha_inicio, 'MM') = LPAD(m.n::text, 2, '0')
+                            OR TO_CHAR(s2.fecha_finalizacion, 'MM') = LPAD(m.n::text, 2, '0')
+                      )
                 )
             )
         """ % self._table)
