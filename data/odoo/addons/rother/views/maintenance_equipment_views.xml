@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    
+
     <record id="view_maintenance_equipment_form_ciberseguridad" model="ir.ui.view">
         <field name="name">maintenance.equipment.form.ciberseguridad</field>
         <field name="model">maintenance.equipment</field>
-        <field name="inherit_id" ref="maintenance.hr_equipment_view_form" />
+        <field name="inherit_id" ref="maintenance.hr_equipment_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
                 <page string="Ciberseguridad" name="ciberseguridad">
-                    <group>
+                    <group string="Monitorización y protección">
                         <group>
-                            <div class="text-muted">
-                                Contenido pendiente de añadir
-                            </div>
+                            <field name="x_soc_activo"/>
+                            <field name="x_soc_nombre" invisible="not x_soc_activo" required="x_soc_activo"/>
+                        </group>
+                        <group>
+                            <field name="x_edr_activo"/>
+                            <field name="x_edr_nombre" invisible="not x_edr_activo" required="x_edr_activo"/>
                         </group>
                     </group>
                 </page>
             </xpath>
         </field>
     </record>
+
 </odoo>

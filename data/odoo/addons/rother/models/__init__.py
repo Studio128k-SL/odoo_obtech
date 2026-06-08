@@ -5,3 +5,4 @@ from . import gpv
 from . import purchase
 from . import stock
 from . import servicio_externo
+from . import maintenance_equipment
