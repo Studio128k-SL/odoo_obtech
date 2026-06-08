@@ -303,6 +303,12 @@ class RotherGPVLinea2(models.Model):
             'price': self[0].precio_unitario,
             'productType': self[0].product_id.type,
         }
+    
+    def action_add_from_catalog(self):
+        gpv = self.mapped('gpv_id')[:1]
+        if not gpv:
+            return False
+        return gpv.action_add_from_catalog()    
 
 
 class RotherGPVLinea(models.Model):

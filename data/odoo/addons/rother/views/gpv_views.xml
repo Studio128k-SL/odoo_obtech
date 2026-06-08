@@ -25,10 +25,6 @@
                             string="Imprimir GPV"
                             type="action"
                             class="btn-primary"/>
-                    <button name="action_add_from_catalog"
-                            string="Catálogo"
-                            type="object"
-                            class="btn-secondary"/>
                 </header>
                 <sheet>
                     <div class="alert alert-info" role="alert" style="margin-bottom: 16px;">
@@ -75,6 +71,10 @@
                                         <create name="add_product" string="Añadir producto"/>
                                         <create name="add_section" string="Añadir sección" context="{'default_display_type': 'line_section'}"/>
                                         <create name="add_note" string="Añadir nota" context="{'default_display_type': 'line_note'}"/>
+                                        <button name="action_add_from_catalog"
+                                                string="Catálogo"
+                                                type="object"
+                                                class="oe_link" />
                                     </control>
                                     <field name="sequence" widget="handle"/>
                                     <field name="display_type" column_invisible="True"/>
