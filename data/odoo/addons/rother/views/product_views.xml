@@ -1,0 +1,132 @@
+<?xml version ="1.0" encoding="utf-8"?>
+
+<odoo>
+
+    <!-- Vista Kanban -->
+    <record id="rother_product_kanban_view" model="ir.ui.view">
+        <field name="name">rother.product.kanban</field>
+        <field name="model">product.template</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="name"/>
+                <field name="default_code"/>
+                <field name="list_price"/>
+                <field name="image_128"/>
+                <field name="x_Ref_fab"/>
+                <field name="barcode"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex">
+                            <field name="image_128" widget="image" class="me-2" style="width: 100px; height: auto; object-fit: contain;"/>
+                            <div>
+                                <strong style="font-size:16px;"><field name="name"/></strong>
+                                <div class="text-muted">[<field name="default_code"/>]</div>
+                                <div>Precio: <field name="list_price"/> €</div>
+                                <div>Ref. Fab: <field name="x_Ref_fab"/></div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="rother_product_tree_view" model="ir.ui.view">
+        <field name="name">rother.product.tree</field>
+        <field name="model">product.template</field>
+        <field name="arch" type="xml">
+            <list string="Productos ROTHER">
+                <field name="name" string="Nombre" />
+                <field name="default_code" string="Referencia" />
+                <field name="x_Ref_fab" string="Referencia Fabricante" />
+                <field name="barcode" string="Código de barras" />
+                <field name="categ_id" string="Categoría" />
+                <field name="list_price" string="Precio de venta" />
+                <field name="standard_price" string="Coste" />
+                <field name="type" string="Tipo de producto" />
+            </list>
+        </field>
+    </record>
+
+    <record id="rother_product_form_view" model="ir.ui.view">
+        <field name="name">rother.product.form</field>
+        <field name="model">product.template</field>
+        <field name="arch" type="xml">
+            <form string="Producto Rother">
+                <header>
+                    <button name="%(rother.rother_product_label_dymo)d"
+                            string="Imprimir Etiqueta"
+                            type="action"
+                            class="btn-primary"/>
+                    <button name="action_update_quantity_on_hand"
+                            string="Actualizar la cantidad"
+                            type="object"
+                            class="btn-secondary"
+                            groups="stock.group_stock_manager"/>
+                </header>
+                <sheet>
+                    <field name="image_1920" widget="image" class="oe_avatar" />
+                    <div class="oe_title">
+                        <label for="name" string="Producto" />
+                        <h1>
+                            <field name="name" string="Producto" />
+                        </h1>
+                    </div>
+                    <div>
+                        <field name="sale_ok" string="Ventas" />
+                        <field name="purchase_ok" string="Compra" />
+                    </div>
+                    <notebook>
+                        <page string="Información general">
+                            <group>
+                                <group string="Información General">
+                                    <field name="type" string="Tipo de producto" widget="radio"/>
+                                    <field name="tracking" string="Rastrear inventario" />
+                                    <field name="list_price" string="Precio de venta" />
+                                    <field name="taxes_id" string="Impuesto de ventas" widget="many2many_tags"/>
+                                    <field name="standard_price" string="Coste" />
+                                    <field name="supplier_taxes_id" string="Impuestos de compra" widget="many2many_tags" />
+                                </group>
+                                <group string="Identificación">
+                                    <field name="categ_id" string="Categoría" />
+                                    <field name="default_code" string="Referencia" />
+                                    <field name="x_Ref_fab" string="Referencia Fabricante" />
+                                    <field name="barcode" string="Código de barras" />
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Notas internas">
+                            <field name="description_picking" string="Notas internas" />
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter>
+                    <field name="message_follower_ids" />
+                    <field name="activity_ids" />
+                    <field name="message_ids" />
+                </chatter>
+            </form>
+        </field>
+    </record>
+
+    <record id="rother_product_action" model="ir.actions.act_window">
+        <field name="name">Productos Rother</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="view_ids" eval="[(5,0,0),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('rother_product_kanban_view')}),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('rother_product_tree_view')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('rother_product_form_view')}),
+        ]"/>
+    </record>
+
+    <menuitem id="rother_menu_root"
+            name="Rother"
+            sequence="100" />
+    
+    <menuitem id="rother_menu_products"
+            name="Productos"
+            parent="rother_menu_root"
+            action="rother_product_action"
+            sequence="1" />
+</odoo>

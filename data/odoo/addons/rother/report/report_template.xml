@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <template id="report_product_rother">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="row mb-4">
+                            <div class="col-8">
+                                <h2 t-field="o.name" />
+                            </div>
+                            <div class="col-4 text-end">
+                                <t t-if="o.image_1920">
+                                    <img t-att-src="image_data_uri(o.image_1920)" style="max-height: 80px" />
+                                </t>
+                            </div>
+                        </div>
+
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <strong>Ventas: </strong>
+                                <span t-if="o.sale_ok">✓</span>
+                                <span t-else="">✗</span>
+                            </div>
+                            <div class="col-6">
+                                <strong>Compra: </strong>
+                                <span t-if="o.purchase_ok">✓</span>
+                                <span t-else="">✗</span>
+                            </div>
+                        </div>
+
+                        <table class="table table-bordered mt-4">
+                            <thead>
+                                <tr>
+                                    <th colspan="2" class="text-center bg-light">
+                                        <strong>Información General</strong>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Tipo de productos</strong></td>
+                                    <td t-field="o.type" />
+                                </tr>
+                                <tr>
+                                    <td><strong>Rastrear inventario</strong></td>
+                                    <td t-field="o.tracking" />
+                                </tr>
+                                <tr>
+                                    <td><strong>Impuesto de ventas</strong></td>
+                                    <td>
+                                        <t t-foreach="o.taxes_id" t-as="tax">
+                                            <span t-field="tax.name" />
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Coste</strong></td>
+                                    <td>
+                                        <span t-field="o.standard_price"
+                                            t-options="{'widget': 'monetary', 'display_currency': o.currency_id}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Impuestos de compra</strong></td>
+                                    <td>
+                                        <t t-foreach="o.supplier_taxes_id" t-as="tax">
+                                            <span t-field="tax.name" />
+                                        </t>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Categoría</strong></td>
+                                    <td t-field="o.categ_id" />
+                                </tr>
+                                <tr>
+                                    <td><strong>Referencia</strong></td>
+                                    <td t-field="o.default_code" />
+                                </tr>
+                                <tr>
+                                    <td><strong>Referencia Fabricante</strong></td>
+                                    <td t-field="o.x_Ref_fab" />
+                                </tr>
+                                <tr>
+                                    <td><strong>Código de barras</strong></td>
+                                    <td t-field="o.barcode" />
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

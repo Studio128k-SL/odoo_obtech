@@ -3,32 +3,30 @@ services:
     build:
       context: ./infrastructure/odoo
       dockerfile: Dockerfile
-    container_name: rother_odoo
-    platform: linux/amd64
-    #restart: always
-    command: --dev=all --log-level=debug
+    container_name: obtech_odoo
+    command: --dev all --log-level debug
     depends_on:
       - db
     volumes:
-      - ./data/odoo/odoo-data:/var/lib/odoo
+      - obtech-odoo-data:/var/lib/odoo
       - ./data/odoo/config:/etc/odoo
       - ./data/odoo/addons:/mnt/extra-addons
-      - ./data/custom_addons:/mnt/custom-addons
+      - ./data/odoo/custom_addons:/mnt/custom-addons
     environment:
       - HOST=db
       - USER=${POSTGRES_DB_USER}
       - PASSWORD=${POSTGRES_DB_PASSWORD}
     networks:
-      - rother-odoo-internal-network
+      - obtech-odoo-internal-network
     ports:
       - 80:8069
       - 8072:8072
   db:
     image: postgres:15
-    container_name: rother_odoo_db
+    container_name: obtech_odoo_db
     restart: always
     volumes:
-      - rother-odoo-db-data:/var/lib/postgresql/data/pgdata
+      - obtech-odoo-db-data:/var/lib/postgresql/data/pgdata
       - ./data/db/shared_folder:/var/lib/postgresql/shared_folder
     environment:
       - POSTGRES_DB=${POSTGRES_DB_MAINTENANCE_NAME}
@@ -36,14 +34,14 @@ services:
       - POSTGRES_USER=${POSTGRES_DB_USER}
       - PGDATA=/var/lib/postgresql/data/pgdata
     networks:
-      - rother-odoo-internal-network
+      - obtech-odoo-internal-network
   pgadmin:
-    image: elestio/pgadmin:REL-8_10
-    container_name: rother_odoo_db_admin
+    image: elestio/pgadmin:REL-9_8
+    container_name: obtech_odoo_db_admin
     depends_on:
       - db
     volumes:
-      - rother-odoo-pgadmin-data:/var/lib/pgadmin
+      - obtech-odoo-pgadmin-data:/var/lib/pgadmin
     ports:
       - 8080:${PGADMIN_LISTEN_PORT}
     environment:
@@ -51,12 +49,13 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
       PGADMIN_LISTEN_PORT: ${PGADMIN_LISTEN_PORT}
     networks:
-      - rother-odoo-internal-network
+      - obtech-odoo-internal-network
 volumes:
-  rother-odoo-db-data:
-  rother-odoo-pgadmin-data:
+  obtech-odoo-db-data:
+  obtech-odoo-pgadmin-data:
+  obtech-odoo-data:
 
 networks:
-  rother-odoo-internal-network:
+  obtech-odoo-internal-network:
     driver: bridge
   
