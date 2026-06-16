@@ -149,3 +149,5 @@ make env=dev update_modules modules=mi_modulo
 make env=dev logs_odoo
 make env=dev connect_odoo
 ```
+
+Documentación de despliegu
